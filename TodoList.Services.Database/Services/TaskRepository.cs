@@ -24,7 +24,7 @@ public class TaskRepository : ITaskRepository
     {
         var userId = this.user.UserId ?? throw new InvalidOperationException("User ID cannot be null.");
 
-        var entity = TaskMapper.ToEntityFromCreate(todoListId, model, userId);
+        var entity = TaskMapper.ToEntityFromCreate(todoListId, model);
 
         await this.context.Tasks.AddAsync(entity);
         await this.context.SaveChangesAsync();
@@ -40,7 +40,14 @@ public class TaskRepository : ITaskRepository
     {
         var userId = this.user.UserId ?? throw new InvalidOperationException("User ID cannot be null.");
 
-        var entity = await this.context.Tasks.Where(t => t.Id == id && t.TodoListId == todoListId && userId == t.UserId).FirstOrDefaultAsync();
+        var canModify = await this.context.TodoListUsers.Where(t => t.TodoListId == todoListId && t.UserId == userId).FirstOrDefaultAsync();
+
+        if (canModify == null)
+        {
+            return false;
+        }
+
+        var entity = await this.context.Tasks.Where(t => t.Id == id && t.TodoListId == todoListId).FirstOrDefaultAsync();
 
         if (entity == null)
         {
@@ -57,7 +64,14 @@ public class TaskRepository : ITaskRepository
     {
         var userId = this.user.UserId ?? throw new InvalidOperationException("User ID cannot be null.");
 
-        var models = await this.context.Tasks.Where(t => t.TodoListId == todoListId && t.UserId == userId).ToListAsync();
+        var canView = await this.context.TodoListUsers.Where(t => t.UserId == userId && t.TodoListId == todoListId).FirstOrDefaultAsync();
+
+        if (canView == null)
+        {
+            return new PaginatedModel<TaskModel>() { };
+        }
+
+        var models = await this.context.Tasks.Where(t => t.TodoListId == todoListId).ToListAsync();
 
         return PaginationMapper.ToPaginatedModel(models.Skip((pageNum - 1) * pageSize).Take(pageSize).Select(entity => TaskMapper.ToModel(entity)), models.Count, pageNum, pageSize);
     }
@@ -66,7 +80,14 @@ public class TaskRepository : ITaskRepository
     {
         var userId = this.user.UserId ?? throw new InvalidOperationException("User ID cannot be null.");
 
-        var entities = await this.context.Tasks.Where(t => t.TodoListId == todoListId && t.UserId == userId).ToListAsync();
+        var canView = await this.context.TodoListUsers.Where(t => t.UserId == userId && t.TodoListId == todoListId).FirstOrDefaultAsync();
+
+        if (canView == null)
+        {
+            return new List<TaskModel>() { };
+        }
+
+        var entities = await this.context.Tasks.Where(t => t.TodoListId == todoListId).ToListAsync();
 
         return entities.Select(entity => TaskMapper.ToModel(entity));
     }
@@ -75,7 +96,15 @@ public class TaskRepository : ITaskRepository
     {
         var userId = this.user.UserId ?? throw new InvalidOperationException("User ID cannot be null.");
 
-        var entity = await this.context.Tasks.Where(t => t.Id == id && t.TodoListId == todoListId && t.UserId == userId).FirstOrDefaultAsync();
+
+        var canView = await this.context.TodoListUsers.Where(t => t.UserId == userId && t.TodoListId == todoListId).FirstOrDefaultAsync();
+
+        if (canView == null)
+        {
+            return null;
+        }
+
+        var entity = await this.context.Tasks.Where(t => t.Id == id && t.TodoListId == todoListId).FirstOrDefaultAsync();
 
         if (entity == null)
         {
@@ -89,7 +118,14 @@ public class TaskRepository : ITaskRepository
     {
         var userId = this.user.UserId ?? throw new InvalidOperationException("User ID cannot be null.");
 
-        var entity = this.context.Tasks.Where(t => t.Id == id && t.TodoListId == todoListId && t.UserId == userId).FirstOrDefault();
+        var canView = await this.context.TodoListUsers.Where(t => t.UserId == userId && t.TodoListId == todoListId).FirstOrDefaultAsync();
+
+        if (canView == null)
+        {
+            return null;
+        }
+
+        var entity = this.context.Tasks.Where(t => t.Id == id && t.TodoListId == todoListId).FirstOrDefault();
 
         if (entity == null)
         {
@@ -110,7 +146,14 @@ public class TaskRepository : ITaskRepository
     {
         var userId = this.user.UserId ?? throw new InvalidOperationException("User ID cannot be null.");
 
-        var entity = await this.context.Tasks.Where(t => t.Id == id && t.TodoListId == todoListId && t.UserId == userId).FirstOrDefaultAsync();
+        var canView = await this.context.TodoListUsers.Where(t => t.UserId == userId && t.TodoListId == todoListId).FirstOrDefaultAsync();
+
+        if (canView == null)
+        {
+            return false;
+        }
+
+        var entity = await this.context.Tasks.Where(t => t.Id == id && t.TodoListId == todoListId && t.AssignedUsers.Any(u => u.UserId == userId)).FirstOrDefaultAsync();
 
         if (entity == null)
         {

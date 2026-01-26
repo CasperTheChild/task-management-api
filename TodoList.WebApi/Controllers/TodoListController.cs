@@ -23,11 +23,6 @@ public class TodoListController : ControllerBase
     {
         var models = await this.service.GetAllAsync();
 
-        Console.WriteLine(HttpContext.User.Claims
-            .Select(c => $"{c.Type} = {c.Value}")
-            .Aggregate((a, b) => a + "\n" + b));
-
-
         return Ok(models);
     }
 

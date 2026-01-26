@@ -28,6 +28,8 @@ public class TodoListDbContext : IdentityDbContext<ApplicationUser, IdentityRole
 
     public DbSet<CommentEntity> Comments { get; set; }
 
+    public DbSet<TodoListUserEntity> TodoListUsers { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder builder)
     {
     }
@@ -35,18 +37,6 @@ public class TodoListDbContext : IdentityDbContext<ApplicationUser, IdentityRole
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        modelBuilder.Entity<TodoListEntity>()
-            .HasOne(l => l.User)
-            .WithMany()
-            .HasForeignKey(l => l.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<TaskEntity>()
-            .HasOne(t => t.User)
-            .WithMany()
-            .HasForeignKey(t => t.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<TaskEntity>()
             .HasOne(t => t.TodoList)
@@ -86,5 +76,18 @@ public class TodoListDbContext : IdentityDbContext<ApplicationUser, IdentityRole
         modelBuilder.Entity<TagEntity>()
             .HasIndex(t => t.TagName)
             .IsUnique();
+
+        modelBuilder.Entity<TodoListUserEntity>(entity =>
+        {
+            entity.HasKey(tlu => new { tlu.TodoListId, tlu.UserId });
+            entity.HasOne(tlu => tlu.TodoList)
+                .WithMany(tl => tl.Members)
+                .HasForeignKey(tlu => tlu.TodoListId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(tlu => tlu.User)
+                .WithMany()
+                .HasForeignKey(tlu => tlu.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
     }
 }

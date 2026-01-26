@@ -149,8 +149,11 @@ public class TagRepository : ITagRepository
 
     public Task<PaginatedModel<TagModel>> GetUserTags(string userId, int pageNumber, int pageSize)
     {
+        throw new NotImplementedException("");
+
         var query = this.context.Tags
-            .Where(t => t.TaskTags.Any(tt => tt.Task.UserId == userId))
+            .Include(t => t.TaskTags)
+            .ThenInclude(t => t.Task)
             .Select(t => TagMapper.ToModel(t));
 
         var totalItems = query.Count();

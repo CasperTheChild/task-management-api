@@ -5,14 +5,13 @@ namespace TodoList.Services.Database.Helpers;
 
 public static class TodoListMapper
 {
-    public static TodoListEntity ToEntityFromCreate(TodoListCreateModel model, string userId)
+    public static TodoListEntity ToEntityFromCreate(TodoListCreateModel model)
     {
         return new TodoListEntity
         {
             Title = model.Title,
             Description = model.Description,
             StartDate = model.StartDate,
-            UserId = userId,
         };
     }
 

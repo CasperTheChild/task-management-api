@@ -19,7 +19,5 @@ public class TodoListEntity
     [NotMapped]
     public bool HasOverdueTasks => this.Tasks != null && this.Tasks.Any(t => !t.IsCompleted && t.EndDate < DateTime.Now);
 
-    public string UserId { get; set; } = default!;
-
-    public ApplicationUser User { get; set; }
+    public IEnumerable<TodoListUserEntity> Members { get; set; } = new List<TodoListUserEntity>();
 }

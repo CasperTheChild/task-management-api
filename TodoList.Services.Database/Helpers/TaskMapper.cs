@@ -5,7 +5,7 @@ namespace TodoList.Services.Database.Helpers;
 
 public static class TaskMapper
 {
-    public static TaskEntity ToEntityFromCreate(int todoListId, TaskCreateModel model, string userId)
+    public static TaskEntity ToEntityFromCreate(int todoListId, TaskCreateModel model)
     {
         return new TaskEntity
         {
@@ -15,7 +15,6 @@ public static class TaskMapper
             EndDate = model.EndDate,
             IsCompleted = model.IsCompleted,
             TodoListId = todoListId,
-            UserId = userId,
         };
     }
 
