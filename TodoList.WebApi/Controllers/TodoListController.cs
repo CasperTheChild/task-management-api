@@ -3,6 +3,7 @@ using TodoList.Services.Interfaces;
 using TodoList.WebApi.Models.Models;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Authorization;
+using IAuthorizationService = TodoList.Services.Interfaces.IAuthorizationService;
 
 namespace TodoList.WebApi.Controllers;
 
@@ -11,16 +12,23 @@ namespace TodoList.WebApi.Controllers;
 [Route("api/[controller]")]
 public class TodoListController : ControllerBase
 {
-    private ITodoListRepository service;
+    private readonly ITodoListRepository service;
+    private readonly IAuthorizationService authorizationService;
+    private readonly ICurrentUserService currentUserService;
 
-    public TodoListController(ITodoListRepository service)
+    public TodoListController(ITodoListRepository service, IAuthorizationService authorizationService, ICurrentUserService currentUserService)
     {
         this.service = service;
+        this.authorizationService = authorizationService;
+        this.currentUserService = currentUserService;
+
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TodoListModel>>> GetAll()
     {
+        var userId = this.currentUserService.UserId;
+
         var models = await this.service.GetAllAsync();
 
         return Ok(models);
@@ -37,6 +45,20 @@ public class TodoListController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<TodoListModel>> GetById(int id)
     {
+        var userId = this.currentUserService.UserId;
+
+        if (userId == null)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        var permission = await this.authorizationService.CanViewAsync(userId, id);
+
+        if (!permission)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
         var model = await this.service.GetAsync(id);
 
         if (model == null)
@@ -66,6 +88,21 @@ public class TodoListController : ControllerBase
     [Consumes("application/json-patch+json")]
     public async Task<ActionResult<TodoListModel>> Patch(int id, JsonPatchDocument<TodoListUpdateModel> patchDoc)
     {
+
+        var userId = this.currentUserService.UserId;
+
+        if (userId == null)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        var permission = await this.authorizationService.CanEditAsync(userId, id);
+
+        if (!permission)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
         var updatedModel = await this.service.PatchAsync(id, patchDoc);
         if (updatedModel == null)
         {
@@ -77,6 +114,20 @@ public class TodoListController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, TodoListCreateModel model)
     {
+        var userId = this.currentUserService.UserId;
+
+        if (userId == null)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        var permission = await this.authorizationService.CanEditAsync(userId, id);
+
+        if (!permission)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
         var success = await this.service.UpdateAsync(id, model);
         if (!success)
         {
@@ -89,6 +140,20 @@ public class TodoListController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
+        var userId = this.currentUserService.UserId;
+
+        if (userId == null)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        var permission = await this.authorizationService.CanEditAsync(userId, id);
+
+        if (!permission)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
         var success = await this.service.DeleteAsync(id);
         if (success)
         {

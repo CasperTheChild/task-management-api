@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TodoList.Services.Interfaces;
 using TodoList.WebApi.Models.Models;
+using IAuthorizationService = TodoList.Services.Interfaces.IAuthorizationService;
 
 namespace TodoList.WebApi.Controllers;
 
@@ -12,15 +13,34 @@ namespace TodoList.WebApi.Controllers;
 public class TasksController : ControllerBase
 {
     private readonly ITaskRepository service;
+    private readonly IAuthorizationService authorizationService;
+    private readonly ICurrentUserService currentUserService;
 
-    public TasksController(ITaskRepository service)
+    public TasksController(ITaskRepository service, Services.Interfaces.IAuthorizationService authorizationService, ICurrentUserService currentUserService)
     {
         this.service = service;
+        this.authorizationService = authorizationService;
+        this.currentUserService = currentUserService;
+
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<TaskModel>> GetByIdAsync(int todoListId, int id)
     {
+        var userId = this.currentUserService.UserId;
+
+        if (userId == null)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        var permission = await this.authorizationService.CanViewTasksAsync(userId, id);
+
+        if (!permission)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
         var model =  await this.service.GetAsync(todoListId, id);
 
         if (model == null)
@@ -51,6 +71,20 @@ public class TasksController : ControllerBase
     [Consumes("application/json-patch+json")]
     public async Task<ActionResult<TaskModel>> PatchAsync(int todoListId, int id, Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TaskUpdateModel> patchDoc)
     {
+        var userId = this.currentUserService.UserId;
+
+        if (userId == null)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        var permission = await this.authorizationService.CanEditAsync(userId, todoListId);
+
+        if (!permission)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
         var entity = await this.service.Patch(todoListId, id, patchDoc);
         if (entity == null)
         {
@@ -62,6 +96,20 @@ public class TasksController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<TaskModel>> PostAsync(int todoListId, TaskCreateModel model)
     {
+        var userId = this.currentUserService.UserId;
+
+        if (userId == null)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        var permission = await this.authorizationService.CanEditAsync(userId, todoListId);
+
+        if (!permission)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
         var entity = await this.service.CreateAsync(todoListId, model);
 
         return Ok(entity);
@@ -70,6 +118,20 @@ public class TasksController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteAsync(int todoListId, int id)
     {
+        var userId = this.currentUserService.UserId;
+
+        if (userId == null)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        var permission = await this.authorizationService.CanEditAsync(userId, todoListId);
+
+        if (!permission)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
         var success = await this.service.DeleteAsync(todoListId, id);
 
         if (!success)
@@ -83,6 +145,20 @@ public class TasksController : ControllerBase
     [HttpPut]
     public async Task<ActionResult<bool>> UpdateAsync(int todoListId, int id, TaskCreateModel model)
     {
+        var userId = this.currentUserService.UserId;
+
+        if (userId == null)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        var permission = await this.authorizationService.CanEditAsync(userId, todoListId);
+
+        if (!permission)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
         var success = await this.service.UpdateAsync(todoListId, id, model);
 
         if (!success)

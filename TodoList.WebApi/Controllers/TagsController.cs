@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Client;
 using TodoList.Services.Interfaces;
 using TodoList.WebApi.Models.Models;
+using IAuthorizationService = TodoList.Services.Interfaces.IAuthorizationService;
 
 namespace TodoList.WebApi.Controllers;
 
@@ -12,10 +13,14 @@ namespace TodoList.WebApi.Controllers;
 public class TagsController : ControllerBase
 {
     private readonly ITagRepository service;
+    private readonly IAuthorizationService authorizationService;
+    private readonly ICurrentUserService currentUserService;
 
-    public TagsController(ITagRepository service)
+    public TagsController(ITagRepository service, Services.Interfaces.IAuthorizationService authorizationService, ICurrentUserService currentUserService)
     {
         this.service = service;
+        this.authorizationService = authorizationService;
+        this.currentUserService = currentUserService;
     }
 
     [HttpGet("allTags")]
@@ -57,6 +62,7 @@ public class TagsController : ControllerBase
     [HttpGet("TagId/{tagId}/paged")]
     public async Task<ActionResult<PaginatedModel<TaskModel>>> GetPagedTasksByTag(int tagId, int pageNumber, int pageSize)
     {
+
         var tasks = await this.service.GetPagedTasksByTag(tagId, pageNumber, pageSize);
         return Ok(tasks);
     }
