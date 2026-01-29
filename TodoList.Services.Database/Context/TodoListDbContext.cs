@@ -60,18 +60,21 @@ public class TodoListDbContext : IdentityDbContext<ApplicationUser, IdentityRole
         modelBuilder.Entity<TaskTagEntity>(entity =>
         {
             entity.HasKey(tt => new { tt.TaskId, tt.TagId });
+
             entity.HasOne(tt => tt.Task)
                 .WithMany(t => t.TaskTags)
                 .HasForeignKey(tt => tt.TaskId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
+
             entity.HasOne(tt => tt.Tag)
                 .WithMany(t => t.TaskTags)
                 .HasForeignKey(tt => tt.TagId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(tt => tt.TaskId);
             entity.HasIndex(tt => tt.TagId);
         });
+
 
         modelBuilder.Entity<TagEntity>()
             .HasIndex(t => t.TagName)

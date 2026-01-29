@@ -6,7 +6,7 @@ public interface ITagRepository
 {
     public Task<IEnumerable<TagModel>> GetAllTags();
 
-    public Task<PaginatedModel<TagModel>> GetUserTags(string userId, int pageNumber, int pageSize);
+    public Task<PaginatedModel<TagModel>> GetTodoListTags(int todoListId, int pageNumber, int pageSize);
 
     public Task<TagModel?> GetTagById(int tagId);
 
@@ -16,7 +16,7 @@ public interface ITagRepository
 
     public Task<PaginatedModel<TagModel>> GetPagedTagsByTask(int taskId, int pageNumber, int pageSize);
 
-    public Task<TagModel> CreateTag(TagCreateModel model);
+    public Task<TagModel> CreateTag(int todoListId, TagCreateModel model);
 
     public Task<TagModel> UpdateTag(int tagId, TagCreateModel model);
 

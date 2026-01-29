@@ -6,6 +6,12 @@ public class TagEntity
 
     public string TagName { get; set; } = string.Empty;
 
+    public bool Test { get; }
+
+    public int TodoListId { get; set; }
+
+    public TodoListEntity TodoList { get; set; }
+
     public string NormalizedTagName { get; set; } = string.Empty;
 
     public ICollection<TaskTagEntity> TaskTags { get; set; } = new List<TaskTagEntity>();

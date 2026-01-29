@@ -12,8 +12,8 @@ using TodoList.Services.Database.Context;
 namespace TodoList.Services.Database.Migrations
 {
     [DbContext(typeof(TodoListDbContext))]
-    [Migration("20251206095705_Initial")]
-    partial class Initial
+    [Migration("20260129173439_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -158,6 +158,87 @@ namespace TodoList.Services.Database.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("TodoList.Services.Database.Entities.CommentEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TaskId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TaskId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Comments");
+                });
+
+            modelBuilder.Entity("TodoList.Services.Database.Entities.TagEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("NormalizedTagName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TagName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("TodoListId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TagName")
+                        .IsUnique();
+
+                    b.HasIndex("TodoListId");
+
+                    b.ToTable("Tags");
+                });
+
+            modelBuilder.Entity("TodoList.Services.Database.Entities.TaskAssignmentEntity", b =>
+                {
+                    b.Property<int>("TaskId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("AssignedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("TaskId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TaskAssignments");
+                });
+
             modelBuilder.Entity("TodoList.Services.Database.Entities.TaskEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -185,17 +266,28 @@ namespace TodoList.Services.Database.Migrations
                     b.Property<int>("TodoListId")
                         .HasColumnType("int");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("TodoListId");
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("Tasks");
+                });
+
+            modelBuilder.Entity("TodoList.Services.Database.Entities.TaskTagEntity", b =>
+                {
+                    b.Property<int>("TaskId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TagId")
+                        .HasColumnType("int");
+
+                    b.HasKey("TaskId", "TagId");
+
+                    b.HasIndex("TagId");
+
+                    b.HasIndex("TaskId");
+
+                    b.ToTable("TaskTags");
                 });
 
             modelBuilder.Entity("TodoList.Services.Database.Entities.TodoListEntity", b =>
@@ -217,15 +309,27 @@ namespace TodoList.Services.Database.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.HasKey("Id");
+
+                    b.ToTable("TodoLists");
+                });
+
+            modelBuilder.Entity("TodoList.Services.Database.Entities.TodoListUserEntity", b =>
+                {
+                    b.Property<int>("TodoListId")
+                        .HasColumnType("int");
+
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("Id");
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
+
+                    b.HasKey("TodoListId", "UserId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("TodoLists");
+                    b.ToTable("TodoListUsers");
                 });
 
             modelBuilder.Entity("TodoList.Services.Database.Identity.ApplicationUser", b =>
@@ -344,10 +448,89 @@ namespace TodoList.Services.Database.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("TodoList.Services.Database.Entities.CommentEntity", b =>
+                {
+                    b.HasOne("TodoList.Services.Database.Entities.TaskEntity", "Task")
+                        .WithMany("Comments")
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TodoList.Services.Database.Identity.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Task");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TodoList.Services.Database.Entities.TagEntity", b =>
+                {
+                    b.HasOne("TodoList.Services.Database.Entities.TodoListEntity", "TodoList")
+                        .WithMany()
+                        .HasForeignKey("TodoListId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TodoList");
+                });
+
+            modelBuilder.Entity("TodoList.Services.Database.Entities.TaskAssignmentEntity", b =>
+                {
+                    b.HasOne("TodoList.Services.Database.Entities.TaskEntity", "Task")
+                        .WithMany("AssignedUsers")
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TodoList.Services.Database.Identity.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Task");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("TodoList.Services.Database.Entities.TaskEntity", b =>
                 {
                     b.HasOne("TodoList.Services.Database.Entities.TodoListEntity", "TodoList")
                         .WithMany("Tasks")
+                        .HasForeignKey("TodoListId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TodoList");
+                });
+
+            modelBuilder.Entity("TodoList.Services.Database.Entities.TaskTagEntity", b =>
+                {
+                    b.HasOne("TodoList.Services.Database.Entities.TagEntity", "Tag")
+                        .WithMany("TaskTags")
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TodoList.Services.Database.Entities.TaskEntity", "Task")
+                        .WithMany("TaskTags")
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Tag");
+
+                    b.Navigation("Task");
+                });
+
+            modelBuilder.Entity("TodoList.Services.Database.Entities.TodoListUserEntity", b =>
+                {
+                    b.HasOne("TodoList.Services.Database.Entities.TodoListEntity", "TodoList")
+                        .WithMany("Members")
                         .HasForeignKey("TodoListId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -363,19 +546,24 @@ namespace TodoList.Services.Database.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("TodoList.Services.Database.Entities.TodoListEntity", b =>
+            modelBuilder.Entity("TodoList.Services.Database.Entities.TagEntity", b =>
                 {
-                    b.HasOne("TodoList.Services.Database.Identity.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                    b.Navigation("TaskTags");
+                });
 
-                    b.Navigation("User");
+            modelBuilder.Entity("TodoList.Services.Database.Entities.TaskEntity", b =>
+                {
+                    b.Navigation("AssignedUsers");
+
+                    b.Navigation("Comments");
+
+                    b.Navigation("TaskTags");
                 });
 
             modelBuilder.Entity("TodoList.Services.Database.Entities.TodoListEntity", b =>
                 {
+                    b.Navigation("Members");
+
                     b.Navigation("Tasks");
                 });
 #pragma warning restore 612, 618

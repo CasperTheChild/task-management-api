@@ -11,6 +11,7 @@ public static class TagMapper
         {
             Id = entity.Id,
             Name = entity.TagName,
+            TodoListId = entity.TodoListId,
         };
     }
 
@@ -21,15 +22,17 @@ public static class TagMapper
             Id = model.Id,
             TagName = model.Name,
             NormalizedTagName = model.Name.ToLower(),
+            TodoListId = model.TodoListId,
         };
     }
 
-    public static TagEntity ToEntity(TagCreateModel model)
+    public static TagEntity ToEntity(int todoListId, TagCreateModel model)
     {
         return new TagEntity
         {
             TagName = model.Name,
             NormalizedTagName = model.Name.ToLower(),
+            TodoListId = todoListId,
         };
     }
 

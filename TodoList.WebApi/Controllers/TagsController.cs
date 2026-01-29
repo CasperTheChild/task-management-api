@@ -8,7 +8,7 @@ using IAuthorizationService = TodoList.Services.Interfaces.IAuthorizationService
 namespace TodoList.WebApi.Controllers;
 
 [ApiController]
-[Route("api/TodoList/[controller]")]
+[Route("api/TodoList/{todoListId}/[controller]")]
 [Authorize]
 public class TagsController : ControllerBase
 {
@@ -24,16 +24,16 @@ public class TagsController : ControllerBase
     }
 
     [HttpGet("allTags")]
-    public async Task<ActionResult<IEnumerable<TagModel>>> GetAllTags()
+    public async Task<ActionResult<IEnumerable<TagModel>>> GetAllTags(int todoListId)
     {
         var tags = await this.service.GetAllTags();
         return Ok(tags);
     }
 
     [HttpGet("User/{userId}/paged")]
-    public async Task<ActionResult<PaginatedModel<TagModel>>> GetUserTags(string userId, int pageNumber, int pageSize)
+    public async Task<ActionResult<PaginatedModel<TagModel>>> GetUserTags(int todoListId, int pageNumber, int pageSize)
     {
-        var tags = await this.service.GetUserTags(userId, pageNumber, pageSize);
+        var tags = await this.service.GetTodoListTags(todoListId, pageNumber, pageSize);
         return Ok(tags);
     }
 
@@ -75,9 +75,9 @@ public class TagsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateTag([FromBody] TagCreateModel model)
+    public async Task<IActionResult> CreateTag(int todoListId, [FromBody] TagCreateModel model)
     {
-        var createdTag = await this.service.CreateTag(model);
+        var createdTag = await this.service.CreateTag(todoListId, model);
         return CreatedAtAction(nameof(CreateTag), new { id = createdTag.Id }, createdTag);
     }
 

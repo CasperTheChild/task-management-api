@@ -21,14 +21,14 @@ public class TagRepository : ITagRepository
 
         if (taskEntity == null)
         {
-            return false;
+            throw new InvalidDataException("NO such task exists.");
         }
 
-        var tagEntity = await this.context.Tags.FindAsync(tagId);
+        var tagEntity = await this.context.Tags.Where(t => t.Id == tagId && t.TodoListId == taskEntity.TodoListId).FirstOrDefaultAsync();
 
         if (tagEntity == null)
         {
-            return false;
+            throw new InvalidOperationException($"Tag with ID {tagId} not found in the same TodoList as the task.");
         }
 
         var existingAssignment = await this.context.TaskTags.FindAsync(taskId, tagId);
@@ -47,16 +47,16 @@ public class TagRepository : ITagRepository
         return true;
     }
 
-    public async Task<TagModel> CreateTag(TagCreateModel model)
+    public async Task<TagModel> CreateTag(int todoListId, TagCreateModel model)
     {
-        var entity = await this.context.Tags.FirstOrDefaultAsync(t => t.NormalizedTagName == model.Name.ToLower());
+        var entity = await this.context.Tags.FirstOrDefaultAsync(t => t.NormalizedTagName == model.Name.ToLower() && t.TodoListId == todoListId);
 
         if (entity != null)
         {
             return TagMapper.ToModel(entity);
         }
 
-        entity = TagMapper.ToEntity(model);
+        entity = TagMapper.ToEntity(todoListId, model);
 
         this.context.Tags.Add(entity);
 
@@ -147,13 +147,10 @@ public class TagRepository : ITagRepository
         return TagMapper.ToModel(entity);
     }
 
-    public Task<PaginatedModel<TagModel>> GetUserTags(string userId, int pageNumber, int pageSize)
+    public Task<PaginatedModel<TagModel>> GetTodoListTags(int todoListId, int pageNumber, int pageSize)
     {
-        throw new NotImplementedException("");
-
         var query = this.context.Tags
-            .Include(t => t.TaskTags)
-            .ThenInclude(t => t.Task)
+            .Where(t => t.TodoListId == todoListId)
             .Select(t => TagMapper.ToModel(t));
 
         var totalItems = query.Count();

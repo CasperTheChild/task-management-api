@@ -205,10 +205,15 @@ namespace TodoList.Services.Database.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("TodoListId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("TagName")
                         .IsUnique();
+
+                    b.HasIndex("TodoListId");
 
                     b.ToTable("Tags");
                 });
@@ -459,6 +464,17 @@ namespace TodoList.Services.Database.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("TodoList.Services.Database.Entities.TagEntity", b =>
+                {
+                    b.HasOne("TodoList.Services.Database.Entities.TodoListEntity", "TodoList")
+                        .WithMany()
+                        .HasForeignKey("TodoListId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TodoList");
+                });
+
             modelBuilder.Entity("TodoList.Services.Database.Entities.TaskAssignmentEntity", b =>
                 {
                     b.HasOne("TodoList.Services.Database.Entities.TaskEntity", "Task")
@@ -494,13 +510,13 @@ namespace TodoList.Services.Database.Migrations
                     b.HasOne("TodoList.Services.Database.Entities.TagEntity", "Tag")
                         .WithMany("TaskTags")
                         .HasForeignKey("TagId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("TodoList.Services.Database.Entities.TaskEntity", "Task")
                         .WithMany("TaskTags")
                         .HasForeignKey("TaskId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Tag");
