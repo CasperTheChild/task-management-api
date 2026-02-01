@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TodoList.Services.Database.Context;
+using TodoList.Services.Database.Helpers;
 using TodoList.Services.Interfaces;
 using TodoList.WebApi.Models.Enums;
 
@@ -12,6 +13,45 @@ public class AuthorizationService : IAuthorizationService
     public AuthorizationService(TodoListDbContext context)
     {
         this.context = context;
+    }
+
+    public async Task<bool> AssignRoleAsync(int todoListId, string targetUserId, TodoListRole role)
+    {
+        var entity = await this.context.TodoListUsers.Where(t => t.TodoListId == todoListId && t.UserId == targetUserId).FirstOrDefaultAsync();
+
+        if (entity == null)
+        {
+            entity = AuthorizationMapper.ToEntity(todoListId, targetUserId, role);
+
+            await this.context.AddAsync(entity);
+
+            await this.context.SaveChangesAsync();
+
+            return true;
+        }
+
+        if (entity.Role == role)
+        {
+            return true;
+        }
+
+        entity.Role = role;
+
+        await this.context.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<bool> CanAssignRoleAsync(string userId, int todoListId)
+    {
+        var entity = await this.context.TodoListUsers.Where(t => t.UserId == userId && t.TodoListId == todoListId && t.Role >= TodoListRole.Owner).FirstOrDefaultAsync();
+
+        if (entity == null)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public async Task<bool> CanEditAsync(string userId, int todoListId)

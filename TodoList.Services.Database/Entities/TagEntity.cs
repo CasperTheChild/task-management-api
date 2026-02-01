@@ -1,4 +1,5 @@
-﻿namespace TodoList.Services.Database.Entities;
+﻿
+namespace TodoList.Services.Database.Entities;
 
 public class TagEntity
 {
