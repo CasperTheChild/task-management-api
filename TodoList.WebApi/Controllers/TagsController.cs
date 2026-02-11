@@ -30,7 +30,7 @@ public class TagsController : ControllerBase
         return Ok(tags);
     }
 
-    [HttpGet("User/{userId}/paged")]
+    [HttpGet("paged")]
     public async Task<ActionResult<PaginatedModel<TagModel>>> GetUserTags(int todoListId, int pageNumber, int pageSize)
     {
         var tags = await this.service.GetTodoListTags(todoListId, pageNumber, pageSize);
