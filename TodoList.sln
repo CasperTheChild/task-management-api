@@ -3,19 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36603.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoList.Services.Database", "TodoList.Services.Database\TodoList.Services.Database.csproj", "{B2EAFC61-ED2A-4288-888C-B40A35DE975E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{B2EAFC61-ED2A-4288-888C-B40A35DE975E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoList.Services", "TodoList.Services\TodoList.Services.csproj", "{C192D321-EDDF-44E7-817F-A8E8070DA912}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "Application\Application.csproj", "{C192D321-EDDF-44E7-817F-A8E8070DA912}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoList.WebApi", "TodoList.WebApi\TodoList.WebApi.csproj", "{CF559136-C6C4-40A1-9030-C0B7DD63F03D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApi", "WebApi\WebApi.csproj", "{CF559136-C6C4-40A1-9030-C0B7DD63F03D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoList.WebApi.Models", "TodoList.WebApi.Models\TodoList.WebApi.Models.csproj", "{472C5201-B88C-4216-B49E-C4AD5D910FED}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{472C5201-B88C-4216-B49E-C4AD5D910FED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoList.Services.WebApi", "TodoList.Services.WebApi\TodoList.Services.WebApi.csproj", "{D38ADE7F-4467-4D0F-AFC7-E491F114B0BA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TodoList.WebApp", "TodoList.WebApp\TodoList.WebApp.csproj", "{30D747E4-FA20-43C0-BEFE-993EC9EB373F}"
-EndProject
-Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "TodoList.WebApp.React", "TodoList.WebApp.React\TodoList.WebApp.React.esproj", "{9E6FF605-F4D9-DF77-CDB0-620CCD10E0C4}"
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "WebApp.React", "WebApp.React\WebApp.React.esproj", "{9E6FF605-F4D9-DF77-CDB0-620CCD10E0C4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,14 +35,6 @@ Global
 		{472C5201-B88C-4216-B49E-C4AD5D910FED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{472C5201-B88C-4216-B49E-C4AD5D910FED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{472C5201-B88C-4216-B49E-C4AD5D910FED}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D38ADE7F-4467-4D0F-AFC7-E491F114B0BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D38ADE7F-4467-4D0F-AFC7-E491F114B0BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D38ADE7F-4467-4D0F-AFC7-E491F114B0BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D38ADE7F-4467-4D0F-AFC7-E491F114B0BA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{30D747E4-FA20-43C0-BEFE-993EC9EB373F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{30D747E4-FA20-43C0-BEFE-993EC9EB373F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{30D747E4-FA20-43C0-BEFE-993EC9EB373F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{30D747E4-FA20-43C0-BEFE-993EC9EB373F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9E6FF605-F4D9-DF77-CDB0-620CCD10E0C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9E6FF605-F4D9-DF77-CDB0-620CCD10E0C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9E6FF605-F4D9-DF77-CDB0-620CCD10E0C4}.Debug|Any CPU.Deploy.0 = Debug|Any CPU

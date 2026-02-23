@@ -1,0 +1,18 @@
+﻿namespace Domain.Entities;
+
+public class TagEntity
+{
+    public int Id { get; set; }
+
+    public string TagName { get; set; } = string.Empty;
+
+    public bool Test { get; }
+
+    public int TodoListId { get; set; }
+
+    public TodoListEntity TodoList { get; set; }
+
+    public string NormalizedTagName { get; set; } = string.Empty;
+
+    public ICollection<TaskTagEntity> TaskTags { get; set; } = new List<TaskTagEntity>();
+}
