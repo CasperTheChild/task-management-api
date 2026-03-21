@@ -1,19 +1,20 @@
 ﻿using Application.DTOs;
+using Domain.Entities;
 using Domain.Enums;
 
 namespace Application.Repository.Interfaces;
 
 public interface ICommentRepository
 {
-    public Task<IEnumerable<CommentModel>> GetAllComments(int taskId, CommentRequestStatus status);
+    public Task<IEnumerable<CommentEntity>> GetAllComments(int taskId, CommentRequestStatus status);
 
-    public Task<PaginatedModel<CommentModel>> GetPagedComments(int taskId, CommentRequestStatus status, int pageNum, int pageSize);
+    public Task<PaginatedModel<CommentEntity>> GetPagedComments(int taskId, CommentRequestStatus status, int pageNum, int pageSize);
 
-    public Task<CommentModel?> GetCommentById(int commentId);
+    public Task<CommentEntity> GetCommentById(int commentId);
 
-    public Task<CommentModel> CreateComment(int taskId, CommentCreateModel model);
+    public void CreateComment(int taskId, CommentEntity entity);
 
-    public Task<bool> UpdateComment(int commentId, CommentCreateModel model);
+    public Task UpdateComment(int commentId, CommentEntity newEntity);
 
-    public Task<bool> ChangeStatus(int commentId, CommentStatus status);
+    public Task ChangeStatus(int commentId, CommentStatus status);
 }

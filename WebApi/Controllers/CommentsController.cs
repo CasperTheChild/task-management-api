@@ -6,7 +6,6 @@ using Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using IAuthorizationRepository = Application.Repository.Interfaces.IAuthorizationRepository;
 
 namespace WebApi.Controllers;
 
@@ -36,10 +35,10 @@ public class CommentsController : ControllerBase
         return Ok(comments);
     }
 
-    [HttpGet("taskId/{taskId}")]
-    public async Task<IActionResult> GetCommentById(int commentId, int taskId)
+    [HttpGet("{commentId}")]
+    public async Task<IActionResult> GetCommentById(int commentId)
     {
-        var comment = await this.commentService.GetComment(commentId, taskId);
+        var comment = await this.commentService.GetComment(commentId);
 
         return Ok(comment);
     }

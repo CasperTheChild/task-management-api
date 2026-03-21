@@ -1,11 +1,12 @@
-﻿using Domain.Entities;
+﻿using Application.Helpers;
+using Domain.Entities;
 using Domain.Enums;
 using Infrastructure.Context;
-using Infrastructure.Helpers;
 using Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 
+namespace Infrastructure.Repositories;
 
 public static class SeedData
 {

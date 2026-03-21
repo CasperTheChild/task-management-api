@@ -1,6 +1,6 @@
 ﻿using Domain.Entities;
 
-namespace Infrastructure.Helpers;
+namespace Application.Helpers;
 
 public static class TaskAssignmentMapper
 {

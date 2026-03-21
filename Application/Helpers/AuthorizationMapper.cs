@@ -1,7 +1,7 @@
 ﻿using Domain.Entities;
 using Domain.Enums;
 
-namespace Infrastructure.Helpers;
+namespace Application.Helpers;
 
 public static class AuthorizationMapper
 {

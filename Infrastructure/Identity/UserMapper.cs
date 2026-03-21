@@ -1,7 +1,7 @@
 ﻿using Application.DTOs;
 using Infrastructure.Identity;
 
-namespace Infrastructure.Helpers;
+namespace Application.Helpers;
 
 public static class UserMapper
 {

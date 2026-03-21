@@ -1,6 +1,7 @@
 ﻿using Application.DTOs;
 using Application.Repository.Interfaces;
 using Application.Services.Interfaces;
+using Domain.Enums;
 
 namespace Application.Services;
 
@@ -8,14 +9,16 @@ public class AuthorizationService
 {
     private readonly IAuthorizationRepository repository;
     private readonly ICurrentUserService userService;
+    private readonly IUnitOfWork unitOfWork;
 
-    public AuthorizationService(IAuthorizationRepository repository, ICurrentUserService service)
+    public AuthorizationService(IAuthorizationRepository repository, ICurrentUserService service, IUnitOfWork unitOfWork)
     {
         this.repository = repository;
         this.userService = service;
+        this.unitOfWork = unitOfWork;
     }
 
-    public async Task<bool> AssignRole(int todoListId, string targetUserId, Domain.Enums.TodoListRole role)
+    public async Task AssignRoleAsync(int todoListId, string targetUserId, TodoListRole role)
     {
         var userId = this.userService.UserId;
 
@@ -24,20 +27,81 @@ public class AuthorizationService
             throw new UnauthorizedAccessException("UserId is not found!");
         }
 
-        var canAssign = await this.repository.CanAssignRoleAsync(userId, todoListId);
+        var canAssign = await this.CanAssignRoleAsync(userId, todoListId);
 
         if (!canAssign)
         {
             throw new UnauthorizedAccessException("The current userId can not assign roles");
         }
 
-        var success = await this.repository.AssignRoleAsync(todoListId, targetUserId, role);
+        await this.repository.AssignRoleAsync(todoListId, targetUserId, role);
+    }
 
-        if (!success)
+    public async Task<bool> CanAssignRoleAsync(string userId, int todoListId)
+    {
+        var role = await this.repository.GetRoleAsync(todoListId, userId);
+
+        if (role == null)
         {
-            throw new Exception("Couldn't assign");
+            return false;
         }
 
-        return true;
+        if (role.Value >= TodoListRole.Owner)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public async Task<bool> CanEditAsync(string userId, int todoListId)
+    {
+        var role = await this.repository.GetRoleAsync(todoListId, userId);
+
+        if (role == null)
+        {
+            return false;
+        }
+
+        if (role.Value >= TodoListRole.Editor)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public async Task<bool> CanViewAsync(string userId, int todoListId)
+    {
+        var role = await this.repository.GetRoleAsync(todoListId, userId);
+
+        if (role == null)
+        {
+            return false;
+        }
+
+        if (role.Value >= TodoListRole.Viewer)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public async Task<bool> IsOwnerAsync(string userId, int todoListId)
+    {
+        var role = await this.repository.GetRoleAsync(todoListId, userId);
+
+        if (role == null)
+        {
+            return false;
+        }
+
+        if (role.Value >= TodoListRole.Owner)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

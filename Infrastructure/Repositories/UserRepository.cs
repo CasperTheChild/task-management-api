@@ -1,7 +1,7 @@
 ﻿using Application.DTOs;
 using Application.Repository.Interfaces;
 using Infrastructure.Context;
-using Infrastructure.Helpers;
+using Application.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
@@ -17,7 +17,7 @@ public class UserRepository : IUserRepository
 
     public async Task<bool> ExistsByEmailAsync(string email)
     {
-        var entity = await this.context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
+        var entity = await this.context.Users.FirstOrDefaultAsync(u => u.Email!.ToLower() == email.ToLower());
 
         if (entity is null)
         {

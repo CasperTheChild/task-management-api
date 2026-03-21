@@ -1,8 +1,7 @@
 ﻿using Application.Repository.Interfaces;
 using Domain.Enums;
 using Infrastructure.Context;
-using Infrastructure.Helpers;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Application.Helpers;
 
 namespace Infrastructure.Repositories;
 
@@ -15,24 +14,21 @@ public class TodoListUserRepository : ITodoListUserRepository
         this.context = context;
     }
 
-    public async Task<bool> AssignPermissionAsync(int todoListId, string userId, TodoListRole role)
+    public async Task AssignRoleAsync(int todoListId, string userId, TodoListRole role)
     {
         var entity = await this.context.TodoListUsers.FindAsync(todoListId, userId);
 
         if (entity != null)
         {
-            return false;
+            return;
         }
 
         entity = TodoListUserMapper.ToEntity(todoListId, userId, role);
 
         await this.context.TodoListUsers.AddAsync(entity);
-        await this.context.SaveChangesAsync();
-
-        return true;
     }
 
-    public async Task<TodoListRole?> HasPermissionAsync(int todoListId, string userId)
+    public async Task<TodoListRole?> HasRoleAsync(int todoListId, string userId)
     {
         var entity = await this.context.TodoListUsers.FindAsync(todoListId, userId);
 
@@ -44,35 +40,24 @@ public class TodoListUserRepository : ITodoListUserRepository
         return entity.Role;
     }
 
-    public async Task<bool> RemovePermissionAsync(int todoListId, string userId)
+    public async Task RemoveRoleAsync(int todoListId, string userId)
     {
         var entity = await this.context.TodoListUsers.FindAsync(todoListId, userId);
 
-        if (entity == null)
+        if (entity != null)
         {
-            return false;
+            this.context.TodoListUsers.Remove(entity);
         }
 
-        this.context.TodoListUsers.Remove(entity);
-        await this.context.SaveChangesAsync();
-
-        return true;
     }
 
-    public Task<bool> UpdatePermissionAsync(int todoListId, string userId, TodoListRole role)
+    public async Task UpdateRoleAsync(int todoListId, string userId, TodoListRole role)
     {
-        var entity = this.context.TodoListUsers.Find(todoListId, userId);
+        var entity = await this.context.TodoListUsers.FindAsync(todoListId, userId);
 
-        if (entity == null)
+        if (entity != null)
         {
-            return Task.FromResult(false);
+            this.context.TodoListUsers.Update(entity);
         }
-
-        entity.Role = role;
-
-        this.context.TodoListUsers.Update(entity);
-        this.context.SaveChangesAsync();
-
-        return Task.FromResult(true);
     }
 }

@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Authorization;
 using Application.Repository.Interfaces;
-using IAuthorizationRepository = Application.Repository.Interfaces.IAuthorizationRepository;
 using Application.DTOs;
 using Application.Services.Interfaces;
 using Application.Services;
@@ -40,7 +39,7 @@ public class TodoListController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<TodoListModel>> GetById(int id)
     {
-        var model = await this.service.GetByIdAsync(id);
+        var model = await this.service.GetAsync(id);
         if (model == null)
         {
             return NotFound();
@@ -49,9 +48,9 @@ public class TodoListController : ControllerBase
     }
 
     [HttpGet("preview")]
-    public async Task<ActionResult<PaginatedModel<TodoListPreviewModel>>> GetAllPreviewPaginated(int pageNum, int pageSize)
+    public async Task<ActionResult<PaginatedModel<TodoListPreviewModel>>> GetAllPreviewPaginated(int pageNum, int pageSize, int taskSize)
     {
-        var models = await this.service.GetAllPreviewAsync(pageNum, pageSize);
+        var models = await this.service.GetAllPreviewAsync(pageNum, pageSize, taskSize);
         return Ok(models);
     }
 
@@ -66,33 +65,21 @@ public class TodoListController : ControllerBase
     [Consumes("application/json-patch+json")]
     public async Task<ActionResult<TodoListModel>> Patch(int id, JsonPatchDocument<TodoListUpdateModel> patchDoc)
     {
-        var patchedModel = await this.service.PatchAsync(id, patchDoc);
-        if (patchedModel == null)
-        {
-            return NotFound();
-        }
-        return Ok(patchedModel);
+        await this.service.PatchAsync(id, patchDoc);
+        return NoContent();
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, TodoListCreateModel model)
     {
-        var success = await this.service.UpdateAsync(id, model);
-        if (success)
-        {
-            return NoContent();
-        }
-        return NotFound();
+        await this.service.UpdateAsync(id, model);
+        return NoContent();
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var success = await this.service.DeleteAsync(id);
-        if (success)
-        {
-            return NoContent();
-        }
-        return NotFound();
+        await this.service.DeleteAsync(id);
+        return NoContent();
     }
 }

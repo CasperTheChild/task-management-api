@@ -1,7 +1,7 @@
 ﻿using Application.DTOs;
 using Domain.Entities;
 
-namespace Infrastructure.Helpers;
+namespace Application.Helpers;
 
 public static class TodoListMapper
 {
@@ -38,14 +38,7 @@ public static class TodoListMapper
         };
     }
 
-    public static void UpdateEntity(TodoListEntity entity, TodoListCreateModel model)
-    {
-        entity.Title = model.Title;
-        entity.Description = model.Description;
-        entity.StartDate = model.StartDate;
-    }
-
-    public static void UpdateEntity(TodoListEntity entity, TodoListUpdateModel model)
+    public static void ToEntityFromUpdate(TodoListEntity entity, TodoListUpdateModel model)
     {
         if (model.Title != null)
         {
@@ -61,5 +54,12 @@ public static class TodoListMapper
         {
             entity.StartDate = (DateTime)model.StartDate;
         }
+    }
+
+    public static void UpdateEntity(TodoListEntity entity, TodoListEntity updatedEntity)
+    {
+        entity.Title = updatedEntity.Title;
+        entity.Description = updatedEntity.Description;
+        entity.StartDate = updatedEntity.StartDate;
     }
 }

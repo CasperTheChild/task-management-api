@@ -5,7 +5,6 @@ using Application.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using IAuthorizationRepository = Application.Repository.Interfaces.IAuthorizationRepository;
 
 namespace WebApi.Controllers;
 
@@ -24,7 +23,7 @@ public class TasksController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<TaskModel>> GetByIdAsync(int todoListId, int id)
     {
-        var model = await this.service.GetByIdAsync(todoListId, id);
+        var model = await this.service.GetAsync(todoListId, id);
         return Ok(model);
     }
 
@@ -46,16 +45,17 @@ public class TasksController : ControllerBase
 
     [HttpPatch("{id}")]
     [Consumes("application/json-patch+json")]
-    public async Task<ActionResult<TaskModel>> PatchAsync(int todoListId, int id, Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TaskUpdateModel> patchDoc)
+    public async Task<IActionResult> PatchAsync(int todoListId, int id, Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TaskUpdateModel> patchDoc)
     {
-        var model = await this.service.PatchAsync(todoListId, id, patchDoc);
-        return Ok(model);
+        await this.service.PatchAsync(todoListId, id, patchDoc);
+        return Ok();
     }
 
     [HttpPost]
     public async Task<ActionResult<TaskModel>> PostAsync(int todoListId, TaskCreateModel model)
     {
-        var res = await this.service.PostAsync(todoListId, model);
+        await this.service.CreateAsync(todoListId, model);
+        var res = await this.service.GetAllAsync(todoListId);
         return Ok(res);
     }
 

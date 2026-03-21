@@ -3,8 +3,9 @@ using Application.Repository.Interfaces;
 using Application.Services.Interfaces;
 using Domain.Enums;
 using Infrastructure.Context;
-using Infrastructure.Helpers;
+using Application.Helpers;
 using Microsoft.EntityFrameworkCore;
+using Domain.Entities;
 
 namespace Infrastructure.Repositories;
 
@@ -20,111 +21,45 @@ public class CommentRepository : ICommentRepository
         this.user = user;
     }
 
-    public async Task<bool> ChangeStatus(int commentId, CommentStatus status)
+    public async Task ChangeStatus(int commentId, CommentStatus status)
     {
         var entity = await this.context.Comments.FindAsync(commentId);
 
-        if (entity == null)
+        if (entity != null)
         {
-            return false;
+            entity.Status = status;
         }
-
-        if (entity.Status == status)
-        {
-            return true;
-        }
-
-        CommentMapper.UpdateStatus(entity, status);
-
-        await this.context.SaveChangesAsync();
-
-        return true;
     }
 
-    public async Task<CommentModel> CreateComment(int taskId, CommentCreateModel model)
+    public void CreateComment(int taskId, CommentEntity entity)
     {
-        var userId = this.user.UserId ?? throw new InvalidOperationException("User ID cannot be null.");
-
-        var entity = CommentMapper.ToEntity(taskId, model, userId);
-
-        await this.context.AddAsync(entity);
-
-        await this.context.SaveChangesAsync();
-
-        var res = CommentMapper.ToModel(entity);
-
-        return res;
+        this.context.Comments.Add(entity);
     }
 
-    public async Task<IEnumerable<CommentModel>> GetAllComments(int taskId, CommentRequestStatus status)
+    public async Task<IEnumerable<CommentEntity>> GetAllComments(int taskId, CommentRequestStatus status)
     {
-        var query = this.context.Tasks.Where(t => t.Id == taskId).SelectMany(t => t.Comments);
-
-        if (status == CommentRequestStatus.Active)
-        {
-            query = query.Where(c => c.Status == CommentStatus.Active);
-        }
-        else if (status == CommentRequestStatus.Resolved)
-        {
-            query = query.Where(c => c.Status == CommentStatus.Resolved);
-        }
-
-        var comments = await query.Select(c => CommentMapper.ToModel(c)).ToListAsync();
-
-        return comments;
+        return await this.context.Comments.Where(c => c.TaskId == taskId && (status == CommentRequestStatus.All || c.Status == (CommentStatus)status)).ToListAsync();
     }
 
-    public async Task<CommentModel?> GetCommentById(int commentId)
+    public async Task<CommentEntity?> GetCommentById(int commentId)
     {
-        var comment = await this.context.Comments.FindAsync(commentId);
-
-        if (comment == null)
-        {
-            return null;
-        }
-
-        var result = CommentMapper.ToModel(comment);
-
-        return result;
+        return await this.context.Comments.FindAsync(commentId);
     }
 
-    public async Task<PaginatedModel<CommentModel>> GetPagedComments(int taskId, CommentRequestStatus status, int pageNum, int pageSize)
+    public async Task<PaginatedModel<CommentEntity>> GetPagedComments(int taskId, CommentRequestStatus status, int pageNum, int pageSize)
     {
-        var query = this.context.Tasks.Where(t => t.Id == taskId).SelectMany(t => t.Comments);
-
-        if (status == CommentRequestStatus.Active)
-        {
-            query = query.Where(c => c.Status == CommentStatus.Active);
-        }
-        else if (status == CommentRequestStatus.Resolved)
-        {
-            query = query.Where(c => c.Status == CommentStatus.Resolved);
-        }
-
-        var totalItems = query.Count();
-
-        query = query.Skip((pageNum - 1) * pageSize).Take(pageSize);
-
-        var comments = query.Select(c => CommentMapper.ToModel(c)).ToList();
-
-        var result = PaginationMapper.ToPaginatedModel(comments, totalItems, pageNum, pageSize);
-
-        return result;
+        var query = this.context.Comments.Where(c => c.TaskId == taskId && (status == CommentRequestStatus.All || c.Status == (CommentStatus)status));
+        var totalItems = await query.CountAsync();
+        var items = await query.Skip((pageNum - 1) * pageSize).Take(pageSize).ToListAsync();
+        return PaginationMapper.ToPaginatedEntity(items, totalItems, pageNum, pageSize);
     }
 
-    public async Task<bool> UpdateComment(int commentId, CommentCreateModel model)
+    public async Task UpdateComment(int commentId, CommentEntity newEntity)
     {
-        var entity = this.context.Comments.SingleOrDefault(t => t.Id == commentId);
-
-        if (entity == null)
+        var entity = await this.context.Comments.FindAsync(commentId);
+        if (entity != null)
         {
-            return false;
+            CommentMapper.UpdateEntity(entity, newEntity);
         }
-
-        CommentMapper.UpdateEntity(entity, model);
-
-        await this.context.SaveChangesAsync();
-
-        return true;
     }
 }

@@ -1,4 +1,4 @@
-﻿using Application.Repository.Interfaces;
+﻿using Application.Services.Interfaces;
 using Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -6,14 +6,14 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
-namespace Infrastructure.Repositories;
+namespace Infrastructure.Services;
 
-public class AuthRepository : IAuthRepository
+public class AuthService : IAuthService
 {
     private readonly UserManager<ApplicationUser> userManager;
     private readonly IConfiguration configuration;
 
-    public AuthRepository(
+    public AuthService(
         UserManager<ApplicationUser> userManager,
         IConfiguration configuration)
     {
@@ -29,19 +29,19 @@ public class AuthRepository : IAuthRepository
             Email = email,
         };
 
-        var result = await this.userManager.CreateAsync(user, password);
+        var result = await userManager.CreateAsync(user, password);
         return result.Succeeded;
     }
 
     public async Task<string?> LoginAsync(string login, string password)
     {
-        var user = await this.userManager.FindByNameAsync(login);
+        var user = await userManager.FindByNameAsync(login);
         if (user == null)
         {
             return null;
         }
 
-        if (!await this.userManager.CheckPasswordAsync(user, password))
+        if (!await userManager.CheckPasswordAsync(user, password))
         {
             return null;
 

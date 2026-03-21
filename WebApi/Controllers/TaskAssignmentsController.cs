@@ -6,7 +6,6 @@ using Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using IAuthorizationRepository = Application.Repository.Interfaces.IAuthorizationRepository;
 
 namespace WebApi.Controllers;
 

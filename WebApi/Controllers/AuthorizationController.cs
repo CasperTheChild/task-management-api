@@ -20,12 +20,8 @@ namespace WebApi.Controllers
         [HttpPost]
         public async Task<IActionResult> AssignRoleAsync(int todoListId, string targetUserId, TodoListRole role)
         {
-            if (this.service.AssignRole(todoListId, targetUserId, role).Result)
-            {
-                return Ok();
-            }
-
-            return BadRequest();
+            await this.service.AssignRoleAsync(todoListId, targetUserId, role);
+            return NoContent();
         }
     }
 }

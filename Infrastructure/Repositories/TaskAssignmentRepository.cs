@@ -4,7 +4,7 @@ using Application.Services.Interfaces;
 using Domain.Entities;
 using Domain.Enums;
 using Infrastructure.Context;
-using Infrastructure.Helpers;
+using Application.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;

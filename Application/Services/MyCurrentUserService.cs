@@ -3,7 +3,7 @@ using System.Security.Claims;
 using Application.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 
-namespace Infrastructure.Repositories;
+namespace Application.Repositories;
 
 public class MyCurrentUserService : ICurrentUserService
 {

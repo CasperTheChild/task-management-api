@@ -2,18 +2,16 @@
 using Application.Repository.Interfaces;
 using Application.Services.Interfaces;
 using Domain.Enums;
-using Microsoft.AspNetCore.Mvc;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Application.Services;
 
 public class TaskAssignmentService
 {
     private readonly ITaskAssignmentRepository repository;
-    private readonly IAuthorizationRepository authorizationService;
+    private readonly AuthorizationService authorizationService;
     private readonly ICurrentUserService currentUserService;
 
-    public TaskAssignmentService(ITaskAssignmentRepository repository, IAuthorizationRepository authorizationRepository, ICurrentUserService currentUserService)
+    public TaskAssignmentService(ITaskAssignmentRepository repository, AuthorizationService authorizationRepository, ICurrentUserService currentUserService)
     {
         this.repository = repository;
         this.authorizationService = authorizationRepository;
@@ -35,7 +33,7 @@ public class TaskAssignmentService
             throw new UnauthorizedAccessException();
         }
 
-        var permission = await this.authorizationService.CanEditTasksAsync(userId, taskId);
+        var permission = await this.authorizationService.CanEditAsync(userId, taskId);
 
         if (!permission)
         {
@@ -56,7 +54,7 @@ public class TaskAssignmentService
             throw new UnauthorizedAccessException();
         }
 
-        var permission = await this.authorizationService.CanEditTasksAsync(currentUserId, taskId);
+        var permission = await this.authorizationService.CanEditAsync(currentUserId, taskId);
 
         if (!permission)
         {

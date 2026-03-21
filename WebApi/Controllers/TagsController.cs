@@ -1,10 +1,10 @@
 ﻿using Application.DTOs;
 using Application.Repository.Interfaces;
+using Application.Services;
 using Application.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Client;
-using IAuthorizationRepository = Application.Repository.Interfaces.IAuthorizationRepository;
 
 namespace WebApi.Controllers;
 
@@ -13,11 +13,11 @@ namespace WebApi.Controllers;
 [Authorize]
 public class TagsController : ControllerBase
 {
-    private readonly ITagRepository service;
+    private readonly TagService service;
 
-    public TagsController(ITagRepository service)
+    public TagsController(TagService service)
     {
-        this.service = service;
+        this.service = service;  
     }
 
     [HttpGet("allTags")]
@@ -56,70 +56,24 @@ public class TagsController : ControllerBase
         return Ok(tag);
     }
 
-    [HttpGet("TagId/{tagId}/paged")]
-    public async Task<ActionResult<PaginatedModel<TaskModel>>> GetPagedTasksByTag(int tagId, int pageNumber, int pageSize)
-    {
-
-        var tasks = await this.service.GetPagedTasksByTag(tagId, pageNumber, pageSize);
-        return Ok(tasks);
-    }
-
-    [HttpGet("TaskId/{taskId}/paged")]
-    public async Task<ActionResult<PaginatedModel<TagModel>>> GetPagedTagsByTask(int taskId, int pageNumber, int pageSize)
-    {
-        var tags = await this.service.GetPagedTagsByTask(taskId, pageNumber, pageSize);
-        return Ok(tags);
-    }
-
     [HttpPost]
     public async Task<IActionResult> CreateTag(int todoListId, [FromBody] TagCreateModel model)
     {
-        var createdTag = await this.service.CreateTag(todoListId, model);
+        var createdTag = this.service.CreateTag(todoListId, model);
         return CreatedAtAction(nameof(CreateTag), new { id = createdTag.Id }, createdTag);
     }
 
     [HttpDelete]
     public async Task<IActionResult> DeleteTag(int tagId)
     {
-        var result = await this.service.DeleteTag(tagId);
-        if (!result)
-        {
-            return NotFound();
-        }
+        await this.service.DeleteTag(tagId);
         return NoContent();
     }
 
     [HttpPut]
     public async Task<IActionResult> UpdateTag(int tagId, [FromBody] TagCreateModel model)
     {
-        var updatedTag = await this.service.UpdateTag(tagId, model);
-        if (updatedTag == null)
-        {
-            return NotFound();
-        }
-        return Ok(updatedTag);
-    }
-
-    [HttpPost("Assign")]
-    public async Task<IActionResult> AssignTagToTask(int taskId, int tagId)
-    {
-        var result = await this.service.AssignTag(taskId, tagId);
-        if (!result)
-        {
-            return NotFound();
-        }
+        await this.service.UpdateTag(tagId, model);
         return NoContent();
     }
-
-    [HttpPost("Remove")]
-    public async Task<IActionResult> RemoveTagFromTask(int taskId, int tagId)
-    {
-        var result = await this.service.RemoveTag(taskId, tagId);
-        if (!result)
-        {
-            return NotFound();
-        }
-        return NoContent();
-    }
-
 }

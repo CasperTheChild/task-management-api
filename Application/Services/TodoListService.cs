@@ -1,8 +1,11 @@
 ﻿using Application.DTOs;
+using Application.Exceptions;
 using Application.Repository.Interfaces;
 using Application.Services.Interfaces;
+using Domain.Enums;
+using Application.Helpers;
 using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.AspNetCore.Mvc;
+using Domain.Entities;
 
 namespace Application.Services;
 
@@ -10,64 +13,76 @@ public class TodoListService
 {
     private readonly ITodoListRepository repository;
     private readonly ICurrentUserService currentUserService;
-    private readonly IAuthorizationRepository authorizationRepository;
+    private readonly AuthorizationService authorizationService;
+    private readonly ITodoListUserRepository todoListUserRepository;
+    private readonly IUnitOfWork unitOfWork;
 
-    public TodoListService(ITodoListRepository repository, ICurrentUserService userService, IAuthorizationRepository authorizationRepository)
+    public TodoListService(ITodoListRepository repository, ICurrentUserService userService, AuthorizationService authorizationService, ITodoListUserRepository todoListUserRepository, IUnitOfWork unitOfWork)
     {
         this.repository = repository;
         this.currentUserService = userService;
-        this.authorizationRepository = authorizationRepository;
+        this.authorizationService = authorizationService;
+        this.todoListUserRepository = todoListUserRepository;
+        this.unitOfWork = unitOfWork;
     }
 
     public async Task<IEnumerable<TodoListModel>> GetAllAsync()
     {
         var userId = this.currentUserService.UserId ?? throw new UnauthorizedAccessException();
 
-        var models = await this.repository.GetAllAsync(userId);
+        var entities = await this.repository.GetAllAsync(userId);
 
-        return models;
+        return entities.Select(t => TodoListMapper.ToModel(t));
     }
 
-    public async Task<ActionResult<PaginatedModel<TodoListModel>>> GetAllAsync(int pageNum, int pageSize)
+    public async Task<PaginatedModel<TodoListModel>> GetAllAsync(int pageNum, int pageSize)
     {
         var userId = this.currentUserService.UserId ?? throw new UnauthorizedAccessException();
 
-        var models = await this.repository.GetAllAsync(userId, pageNum, pageSize);
+        var entities = await this.repository.GetAllAsync(userId, pageNum, pageSize);
+
+        var models = new PaginatedModel<TodoListModel>
+        {
+            Items = entities.Items.Select(t => TodoListMapper.ToModel(t)),
+            TotalItems = entities.TotalItems,
+            ItemsPerPage = entities.ItemsPerPage,
+            CurrentPage = entities.CurrentPage,
+        };
 
         return models;
     }
 
-    public async Task<TodoListModel> GetByIdAsync(int id)
+    public async Task<TodoListModel> GetAsync(int id)
     {
-        var userId = this.currentUserService.UserId;
+        var userId = this.currentUserService.UserId ?? throw new UnauthorizedAccessException();
 
         if (userId == null)
         {
             throw new UnauthorizedAccessException();
         }
 
-        var permission = await this.authorizationRepository.CanViewAsync(userId, id);
+        var permission = await this.authorizationService.CanViewAsync(userId, id);
 
         if (!permission)
         {
             throw new UnauthorizedAccessException();
         }
 
-        var model = await this.repository.GetAsync(userId, id);
+        var entity = await this.repository.GetAsync(id);
 
-        if (model == null)
+        if (entity == null)
         {
-            throw new UnauthorizedAccessException();
+            throw new NotFoundException(nameof(entity), id);
         }
 
-        return model;
+        return TodoListMapper.ToModel(entity);
     }
 
-    public async Task<PaginatedModel<TodoListPreviewModel>> GetAllPreviewAsync(int pageNum, int pageSize)
+    public async Task<PaginatedModel<TodoListPreviewModel>> GetAllPreviewAsync(int pageNum, int pageSize, int amount)
     {
         var userId = this.currentUserService.UserId ?? throw new UnauthorizedAccessException();
 
-        var models = await this.repository.GetAllPreviewAsync(userId, pageNum, pageSize);
+        var models = await this.repository.GetAllPreviewAsync(userId, pageNum, pageSize, amount);
 
         return models;
     }
@@ -75,11 +90,87 @@ public class TodoListService
     public async Task<TodoListModel> CreateAsync(TodoListCreateModel model)
     {
         var userId = this.currentUserService.UserId ?? throw new UnauthorizedAccessException();
-        var createdModel = await this.repository.CreateAsync(userId, model);
-        return createdModel;
+
+        var entity = TodoListMapper.ToEntityFromCreate(model);
+
+        this.repository.Create(entity);
+
+        var affected = await this.unitOfWork.SaveChangesAsync();
+
+        await this.todoListUserRepository.AssignRoleAsync(entity.Id, userId, TodoListRole.Owner);
+
+        await this.unitOfWork.SaveChangesAsync();
+
+        return TodoListMapper.ToModel(entity);
     }
 
-    public async Task<TodoListModel?> PatchAsync(int id, JsonPatchDocument<TodoListUpdateModel> patchDoc)
+    public async Task PatchAsync(int id, JsonPatchDocument<TodoListUpdateModel> patchDoc)
+    {
+        var userId = this.currentUserService.UserId ?? throw new UnauthorizedAccessException();
+
+        if (userId == null)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        var permission = await this.authorizationService.CanEditAsync(userId, id);
+
+        if (!permission)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        var entity = await this.repository.GetAsync(id);
+
+        if (entity == null)
+        {
+            throw new NotFoundException(nameof(entity), id);
+        }
+
+        var updatedModel = new TodoListUpdateModel
+        {
+            Title = entity.Title,
+            Description = entity.Description,
+            StartDate = entity.StartDate,
+        };
+
+        patchDoc.ApplyTo(updatedModel);
+
+        TodoListMapper.ToEntityFromUpdate(entity, updatedModel);
+
+        await this.repository.UpdateAsync(id, entity);
+
+        await this.unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task UpdateAsync(int id, TodoListCreateModel model)
+    {
+        var userId = this.currentUserService.UserId;
+        if (userId == null)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        var permission = await this.authorizationService.CanEditAsync(userId, id);
+
+        if (!permission)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        TodoListEntity entity = TodoListMapper.ToEntityFromCreate(model);
+
+        if (entity == null)
+        {
+            throw new NotFoundException(nameof(entity), id);
+        }
+
+        await this.repository.UpdateAsync(id, entity);
+
+        await this.unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(int id)
     {
         var userId = this.currentUserService.UserId;
 
@@ -88,70 +179,15 @@ public class TodoListService
             throw new UnauthorizedAccessException();
         }
 
-        var permission = await this.authorizationRepository.CanEditAsync(userId, id);
+        var permission = await this.authorizationService.CanEditAsync(userId, id);
 
         if (!permission)
         {
             throw new UnauthorizedAccessException();
         }
 
-        var updatedModel = await this.repository.PatchAsync(userId, id, patchDoc);
+        await this.repository.DeleteAsync(id);
 
-        if (updatedModel == null)
-        {
-            throw new UnauthorizedAccessException();
-        }
-
-        return updatedModel;
-    }
-
-    public async Task<bool> UpdateAsync(int id, TodoListCreateModel model)
-    {
-        var userId = this.currentUserService.UserId;
-        if (userId == null)
-        {
-            throw new UnauthorizedAccessException();
-        }
-
-        var permission = await this.authorizationRepository.CanEditAsync(userId, id);
-
-        if (!permission)
-        {
-            throw new UnauthorizedAccessException();
-        }
-
-        var success = await this.repository.UpdateAsync(userId, id, model);
-        if (!success)
-        {
-            throw new UnauthorizedAccessException();
-        }
-
-        return success;
-    }
-
-    public async Task<bool> DeleteAsync(int id)
-    {
-        var userId = this.currentUserService.UserId;
-
-        if (userId == null)
-        {
-            throw new UnauthorizedAccessException();
-        }
-
-        var permission = await this.authorizationRepository.CanEditAsync(userId, id);
-
-        if (!permission)
-        {
-            throw new UnauthorizedAccessException();
-        }
-
-        var success = await this.repository.DeleteAsync(userId, id);
-
-        if (!success)
-        {
-            throw new UnauthorizedAccessException();
-        }
-
-        return success;
+        await this.unitOfWork.SaveChangesAsync();
     }
 }

@@ -1,6 +1,6 @@
-﻿namespace Application.Repository.Interfaces;
+﻿namespace Application.Services.Interfaces;
 
-public interface IAuthRepository
+public interface IAuthService
 {
     Task<bool> RegisterAsync(string email, string password);
 

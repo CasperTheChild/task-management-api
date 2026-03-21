@@ -1,21 +1,20 @@
 ﻿using Application.DTOs;
+using Domain.Entities;
 using Microsoft.AspNetCore.JsonPatch;
 
 namespace Application.Repository.Interfaces;
 
 public interface ITaskRepository
 {
-    Task<TaskModel?> GetAsync(int todoListId, int id);
+    public Task<TaskEntity?> GetAsync(int id);
 
-    Task<TaskModel> CreateAsync(int todoListId, TaskCreateModel model);
+    public void CreateAsync(int todoListId, TaskEntity entity);
 
-    Task<TaskModel?> Patch(int todoListId, int id, JsonPatchDocument<TaskUpdateModel> patchDoc);
+    public Task UpdateAsync(int id, TaskEntity entity);
 
-    Task<bool> UpdateAsync(int todoListId, int id, TaskCreateModel model);
+    public Task DeleteAsync(int id);
 
-    Task<bool> DeleteAsync(int todoListId, int id);
+    public Task<IEnumerable<TaskEntity>> GetAllAsync(int todoListId);
 
-    Task<IEnumerable<TaskModel>> GetAllAsync(int todoListId);
-
-    Task<PaginatedModel<TaskModel>> GetAllAsync(int todoListId, int pageNum, int pageSize);
+    public Task<PaginatedModel<TaskEntity>> GetAllAsync(int todoListId, int pageNum, int pageSize);
 }

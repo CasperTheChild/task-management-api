@@ -1,8 +1,9 @@
 ﻿using Application.DTOs;
 using Domain.Entities;
 using Domain.Enums;
+using System.Net.NetworkInformation;
 
-namespace Infrastructure.Helpers;
+namespace Application.Helpers;
 
 public static class CommentMapper
 {
@@ -38,5 +39,11 @@ public static class CommentMapper
     public static void UpdateEntity(CommentEntity entity, CommentCreateModel model)
     {
         entity.Content = model.Content;
+    }
+
+    public static void UpdateEntity(CommentEntity entity, CommentEntity newEntity)
+    {
+        entity.Content = newEntity.Content;
+        entity.Status = newEntity.Status;
     }
 }

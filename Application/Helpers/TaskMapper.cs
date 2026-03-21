@@ -1,7 +1,7 @@
 ﻿using Application.DTOs;
 using Domain.Entities;
 
-namespace Infrastructure.Helpers;
+namespace Application.Helpers;
 
 public static class TaskMapper
 {
@@ -30,6 +30,15 @@ public static class TaskMapper
             IsCompleted = entity.IsCompleted,
             TodoListId = entity.TodoListId,
         };
+    }
+
+    public static void UpdateEntity(TaskEntity entity, TaskEntity newEntity)
+    {
+        entity.Title = newEntity.Title;
+        entity.Description = newEntity.Description;
+        entity.StartDate = newEntity.StartDate;
+        entity.EndDate = newEntity.EndDate;
+        entity.IsCompleted = newEntity.IsCompleted;
     }
 
     public static void UpdateEntity(TaskEntity entity, TaskCreateModel model)
