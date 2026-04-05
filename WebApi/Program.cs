@@ -16,6 +16,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
+using Hangfire;
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
@@ -50,6 +51,7 @@ builder.Services.AddScoped<TodoListUserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICurrentUserService, MyCurrentUserService>();
 
+builder.Services.AddHangfire(p => p.UseSqlServerStorage(builder.Configuration.GetConnectionString("HangfireDb")));
 
 builder.Services.AddHttpContextAccessor();
 
