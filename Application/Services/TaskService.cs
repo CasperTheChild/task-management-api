@@ -51,6 +51,20 @@ public class TaskService
         return TaskMapper.ToModel(entity);
     }
 
+    public async Task<PaginatedModel<TaskModel>> GetTasksDueSoon(int pageNum, int pageSize)
+    {
+        var userId = this.currentUserService.UserId;
+
+        if (userId == null)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        var entities = await this.repository.GetTasksDueSoon(userId, pageNum, pageSize, DateTime.UtcNow.AddDays(3));
+
+        return PaginationMapper.ToPaginatedModel(entities.Items.Select(t => TaskMapper.ToModel(t)), entities.TotalItems, pageNum, pageSize);
+    }
+
     public async Task<PaginatedModel<TaskModel>> GetAllByUserIdAsync(int pageNum, int pageSize)
     {
         var userId = this.currentUserService.UserId;

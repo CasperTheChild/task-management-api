@@ -32,6 +32,14 @@ public class TaskRepository : ITaskRepository
         }
     }
 
+    public async Task<PaginatedModel<TaskEntity>> GetTasksDueSoon(string userId, int pageNum, int pageSize, DateTime time)
+    {
+        var query = this.context.Tasks.Where(t => t.EndDate <= time && t.TodoList.Members.Any(m => m.UserId == userId));
+        var totalItems = await query.CountAsync();
+        var entities = await query.Skip((pageNum - 1) * pageSize).Take(pageSize).ToListAsync();
+        return PaginationMapper.ToPaginatedEntity(entities, totalItems, pageNum, pageSize);
+    }
+
     public async Task<PaginatedModel<TaskEntity>> GetAllByUserIdAsync(string userId, int pageNum, int pageSize)
     {
         var query = this.context.Tasks.Where(t => t.TodoList.Members.Any(m => m.UserId == userId));
