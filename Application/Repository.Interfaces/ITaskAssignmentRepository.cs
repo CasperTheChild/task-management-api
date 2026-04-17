@@ -7,7 +7,7 @@ public interface ITaskAssignmentRepository
 {
     Task<PaginatedModel<TaskModel>> GetAssignedTasks(AssignedTaskQuery query);
 
-    Task AssignTaskToUserAsync(string userId, int taskId);
+    void AssignTaskToUserAsync(string userId, int taskId);
 
     Task RemoveTaskAssignmentAsync(string userId, int taskId);
 }

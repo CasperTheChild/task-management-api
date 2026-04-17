@@ -10,12 +10,14 @@ public class TaskAssignmentService
     private readonly ITaskAssignmentRepository repository;
     private readonly AuthorizationService authorizationService;
     private readonly ICurrentUserService currentUserService;
+    private readonly IUnitOfWork unitOfWork;
 
-    public TaskAssignmentService(ITaskAssignmentRepository repository, AuthorizationService authorizationRepository, ICurrentUserService currentUserService)
+    public TaskAssignmentService(ITaskAssignmentRepository repository, AuthorizationService authorizationRepository, ICurrentUserService currentUserService, IUnitOfWork unitOfWork)
     {
         this.repository = repository;
         this.authorizationService = authorizationRepository;
         this.currentUserService = currentUserService;
+        this.unitOfWork = unitOfWork;
     }
 
     public async Task<PaginatedModel<TaskModel>> GetPagedAsync(AssignedTaskQuery query)
@@ -42,6 +44,8 @@ public class TaskAssignmentService
 
         await this.repository.RemoveTaskAssignmentAsync(userId, taskId);
 
+        await this.unitOfWork.SaveChangesAsync();
+
         return;
     }
 
@@ -61,7 +65,9 @@ public class TaskAssignmentService
             throw new UnauthorizedAccessException();
         }
 
-        await this.repository.AssignTaskToUserAsync(userId, taskId);
+        this.repository.AssignTaskToUserAsync(userId, taskId);
+
+        await this.unitOfWork.SaveChangesAsync();
 
         return;
     }
