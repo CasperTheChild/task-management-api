@@ -6,6 +6,8 @@ namespace Application.Repository.Interfaces;
 
 public interface ITaskRepository
 {
+    public Task<PaginatedModel<TaskEntity>> GetAllByUserIdAsync(string userId, int pageNum, int pageSize);
+
     public Task<TaskEntity?> GetAsync(int id);
 
     public void CreateAsync(int todoListId, TaskEntity entity);
