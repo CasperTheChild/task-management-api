@@ -10,7 +10,7 @@ public interface ITaskRepository
 
     public Task<TaskEntity?> GetAsync(int id);
 
-    public Task<PaginatedModel<TaskEntity>> GetTasksDueSoon(string userid, int pageNum, int pageSize);
+    public Task<PaginatedModel<TaskEntity>> GetTasksDueSoon(string userid, int pageNum, int pageSize, DateTime time);
 
     public void CreateAsync(int todoListId, TaskEntity entity);
 

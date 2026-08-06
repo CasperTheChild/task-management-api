@@ -8,13 +8,15 @@ function App() {
 
     return (
         <div
-            className="min-vh-100 bg-dark text-light p-3 btn-dark"
+            className="container-fluid min-vh-100 bg-dark text-light btn-dark p-2"
         >
+
         {token == null && <div>
-            <LogInPage />
-            <Register />
-            </div>}
+        <LogInPage />
+        <Register />
+        </div>}
         { token && <MainPage /> }
+    
         </div>
     )
 }

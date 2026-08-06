@@ -50,8 +50,12 @@ builder.Services.AddScoped<TodoListService>();
 builder.Services.AddScoped<TodoListUserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICurrentUserService, MyCurrentUserService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IBackgroundJobService, HangfireJobService>();
+builder.Services.AddScoped<IEmailService, SendGridEmailService>();
 
 builder.Services.AddHangfire(p => p.UseSqlServerStorage(builder.Configuration.GetConnectionString("HangfireDb")));
+builder.Services.AddHangfireServer();
 
 builder.Services.AddHttpContextAccessor();
 
@@ -137,6 +141,8 @@ app.MapGet("/", context =>
     context.Response.Redirect("/swagger");
     return Task.CompletedTask;
 });
+
+app.UseHangfireDashboard("/hangfire");
 
 app.UseSwagger();
 app.UseSwaggerUI(options =>

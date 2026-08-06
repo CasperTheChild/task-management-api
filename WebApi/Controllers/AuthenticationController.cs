@@ -1,4 +1,5 @@
 ﻿using Application.DTOs;
+using Application.Services;
 using Application.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -9,9 +10,9 @@ namespace WebApi.Controllers
     [ApiController]
     public class AuthenticationController : ControllerBase
     {
-        private readonly IAuthService service;
+        private readonly AuthenticationService service;
 
-        public AuthenticationController(IAuthService service)
+        public AuthenticationController(AuthenticationService service)
         {
             this.service = service;
         }

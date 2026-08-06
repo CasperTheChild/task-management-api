@@ -2,5 +2,5 @@
 
 public interface INotificationService
 {
-    public Task SendWelcomeNotificationAsync(string email);
+    public Task SendWelcomeNotificationAsync(string to, string subject, string body, bool isHttp);
 }

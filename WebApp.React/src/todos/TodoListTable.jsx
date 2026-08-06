@@ -78,10 +78,10 @@ export default function TodoListTable({ setTodoListId }) {
         }
     }
 
-    console.log("TABLE PROPS:", todoList);
-
     return (
-        <section>
+        <div
+            className="container-fluid border border-primary col"
+        >
             <h1>Todo Lists</h1>
             <table>
                 <thead>
@@ -122,7 +122,7 @@ export default function TodoListTable({ setTodoListId }) {
                     <EditTodoListForm
                         id={editTodoListId}
                         todo={editTodoListData}
-                        onEdit={handleEdit}
+                        onEdit={handleEditTodoList}
                         onClose={closeEditTodoListForm}
                     />
                 </div>
@@ -132,6 +132,6 @@ export default function TodoListTable({ setTodoListId }) {
             <CreateTodoListForm
                 onCreate={handleCreateTodoList}
             />
-        </section>
+        </div>
     )
 }

@@ -1,5 +1,5 @@
 export async function LogInApi(email, password) {
-    const url = `/api/Auth/login`
+    const url = `/api/Authentication/login`
     const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -19,7 +19,7 @@ export async function LogInApi(email, password) {
 }
 
 export async function RegisterApi(email, password, confirmPassword) {
-    const url = `api/Auth/register`
+    const url = `api/Authentication/register`
     const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
