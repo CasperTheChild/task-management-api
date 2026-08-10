@@ -11,8 +11,8 @@ public class NotificationService : INotificationService
         this.emailService = emailService;
     }
 
-    public Task SendWelcomeNotificationAsync(string to, string subject, string body, bool isHttp)
+    public async Task SendNotificationAsync(string to, string subject, string body, bool isHttp)
     {
-        return this.emailService.SendEmailAsync(to, subject, body, isHttp);
+        await this.emailService.SendEmailAsync(to, subject, body, isHttp);
     }
 }
