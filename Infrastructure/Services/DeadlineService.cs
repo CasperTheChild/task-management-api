@@ -8,20 +8,29 @@ public class DeadlineService : IDeadlineService
     private readonly ITaskRepository taskRepository;
     private readonly INotificationService notificationService;
 
-    public async Task CheckDeadlines(int userId)
+    public DeadlineService(ITaskRepository taskRepository, INotificationService notificationService)
+    {
+        this.taskRepository = taskRepository;
+        this.notificationService = notificationService;
+    }
+
+    public async Task CheckUpcomingDeadlinesAsync()
     {
         // Get the current time
         var now = DateTime.UtcNow;
-        // Get tasks due in the next 24 hours
-        var tasksDueSoon = await this.taskRepository.GetTasksDueBetween(userId.ToString(), now, now.AddHours(24));
+        // Get tasks due in the next 61 minutes
+        var tasksDueSoon = await this.taskRepository.GetTasksDueBetween(now, now.AddMinutes(61));
         foreach (var task in tasksDueSoon)
         {
-            // Send notification for each task due soon
-            await this.notificationService.SendNotificationAsync(
-                "user",
+            foreach (var user in task.AssignedUsers)
+            {
+                // Send notification to each assigned user
+                await this.notificationService.SendNotificationAsync(
+                user.UserId,
                 "Task Deadline Approaching",
                 $"Your task '{task.Title}' is due on {task.EndDate}. Please make sure to complete it on time.",
                 false);
+            }
         }
     }
 }

@@ -29,15 +29,15 @@ public class AuthorizationRepository : IAuthorizationRepository
         entity.Role = role;
     }
 
-    public Task<TodoListRole?> GetRoleAsync(int todoListId, string userId)
+    public async Task<TodoListRole?> GetRoleAsync(int todoListId, string userId)
     {
-        var entity = this.context.TodoListUsers.Find(todoListId, userId);
+        var entity = await this.context.TodoListUsers.FindAsync(todoListId, userId);
 
         if (entity == null)
         {
-            return Task.FromResult<TodoListRole?>(null);
+            return null;
         }
 
-        return Task.FromResult<TodoListRole?>(entity.Role);
+        return entity.Role;
     }
 }

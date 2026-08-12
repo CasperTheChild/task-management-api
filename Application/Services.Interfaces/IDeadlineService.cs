@@ -4,5 +4,5 @@ namespace Application.Services.Interfaces;
 
 public interface IDeadlineService
 {
-    public Task CheckDeadlines(int userId);
+    public Task CheckUpcomingDeadlinesAsync();
 }

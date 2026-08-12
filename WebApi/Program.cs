@@ -53,6 +53,7 @@ builder.Services.AddScoped<ICurrentUserService, MyCurrentUserService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IBackgroundJobService, HangfireJobService>();
 builder.Services.AddScoped<IEmailService, SendGridEmailService>();
+builder.Services.AddScoped<IDeadlineService, DeadlineService>();
 
 builder.Services.AddHangfire(p => p.UseSqlServerStorage(builder.Configuration.GetConnectionString("HangfireDb")));
 builder.Services.AddHangfireServer();
@@ -149,6 +150,8 @@ app.UseSwaggerUI(options =>
 {
     options.SwaggerEndpoint("/swagger/v1/swagger.json", "WebApp");
 });
+
+HangfireJobRegistration.RegisterJobs();
 
 
 //using (var scope = app.Services.CreateScope())

@@ -17,7 +17,7 @@ public class TaskRepository : ITaskRepository
         this.context = context;
     }
 
-    public void CreateAsync(int todoListId, TaskEntity entity)
+    public void Create(int todoListId, TaskEntity entity)
     {
         this.context.Tasks.Add(entity);
     }
@@ -32,9 +32,11 @@ public class TaskRepository : ITaskRepository
         }
     }
 
-    public async Task<IList<TaskEntity>> GetTasksDueBetween(string userId, DateTime from, DateTime to)
+    public async Task<IList<TaskEntity>> GetTasksDueBetween(DateTime from, DateTime to)
     {
-        var query = this.context.Tasks.Where(t => t.EndDate >= from && t.EndDate <= to && t.TodoList.Members.Any(m => m.UserId == userId));
+        var query = this.context.Tasks
+            .Include(t => t.AssignedUsers)
+            .Where(t => t.EndDate >= from && t.EndDate <= to);
         var entities = await query.ToListAsync();
         return entities;
     }

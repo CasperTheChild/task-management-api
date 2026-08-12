@@ -10,9 +10,9 @@ public interface ITaskRepository
 
     public Task<TaskEntity?> GetAsync(int id);
 
-    public Task<IList<TaskEntity>> GetTasksDueBetween(string userid, DateTime from, DateTime to);
+    public Task<IList<TaskEntity>> GetTasksDueBetween(DateTime from, DateTime to);
 
-    public void CreateAsync(int todoListId, TaskEntity entity);
+    public void Create(int todoListId, TaskEntity entity);
 
     public Task UpdateAsync(int id, TaskEntity entity);
 
