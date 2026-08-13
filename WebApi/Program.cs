@@ -51,7 +51,6 @@ builder.Services.AddScoped<TodoListUserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICurrentUserService, MyCurrentUserService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
-builder.Services.AddScoped<IBackgroundJobService, HangfireJobService>();
 builder.Services.AddScoped<IEmailService, SendGridEmailService>();
 builder.Services.AddScoped<IDeadlineService, DeadlineService>();
 

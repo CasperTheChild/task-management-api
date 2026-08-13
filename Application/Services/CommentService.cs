@@ -15,14 +15,14 @@ public class CommentService
     private readonly ICommentRepository repository;
     private readonly ITaskRepository taskRepository;
     private readonly ICurrentUserService currentUserService;
-    private readonly AuthorizationService authorizationRepository;
+    private readonly AuthorizationService authorizationService;
     private readonly IUnitOfWork unitOfWork;
 
     public CommentService(ICommentRepository repository, ICurrentUserService currentuserService, AuthorizationService authorizationRepository, ITaskRepository taskRepository, IUnitOfWork unitOfWork)
     {
         this.repository = repository;
         this.currentUserService = currentuserService;
-        this.authorizationRepository = authorizationRepository;
+        this.authorizationService = authorizationRepository;
         this.taskRepository = taskRepository;
         this.unitOfWork = unitOfWork;
     }
@@ -43,7 +43,7 @@ public class CommentService
             throw new NotFoundException(nameof(TaskModel), taskId);
         }
 
-        var permission = await this.authorizationRepository.CanViewAsync(userId, taskId);
+        var permission = await this.authorizationService.CanViewAsync(userId, taskId);
 
         if (!permission)
         {
@@ -71,7 +71,7 @@ public class CommentService
             throw new NotFoundException(nameof(TaskModel), taskId);
         }
 
-        var permission = await this.authorizationRepository.CanViewAsync(userId, taskId);
+        var permission = await this.authorizationService.CanViewAsync(userId, taskId);
 
         if (!permission)
         {
@@ -107,7 +107,7 @@ public class CommentService
             throw new NotFoundException(nameof(CommentModel), commentId);
         }
 
-        var permission = await this.authorizationRepository.CanViewAsync(userId, entity.TaskId);
+        var permission = await this.authorizationService.CanViewAsync(userId, entity.TaskId);
 
         if (!permission)
         {
@@ -126,7 +126,7 @@ public class CommentService
             throw new UnauthorizedAccessException();
         }
 
-        var permission = await this.authorizationRepository.CanEditAsync(userId, taskId);
+        var permission = await this.authorizationService.CanEditAsync(userId, taskId);
 
         if (!permission)
         {
@@ -138,6 +138,8 @@ public class CommentService
         this.repository.CreateComment(taskId, entity);
 
         await this.unitOfWork.SaveChangesAsync();
+
+
 
         return CommentMapper.ToModel(entity);
     }
@@ -158,7 +160,7 @@ public class CommentService
             throw new NotFoundException(nameof(CommentModel), commentId);
         }
 
-        var permission = await this.authorizationRepository.CanEditAsync(userId, entity.TaskId);
+        var permission = await this.authorizationService.CanEditAsync(userId, entity.TaskId);
 
         if (!permission)
         {
@@ -186,7 +188,7 @@ public class CommentService
             throw new NotFoundException(nameof(CommentModel), commentId);
         }
 
-        var permission = await this.authorizationRepository.CanEditAsync(userId, entity.TaskId);
+        var permission = await this.authorizationService.CanEditAsync(userId, entity.TaskId);
 
         if (!permission)
         {

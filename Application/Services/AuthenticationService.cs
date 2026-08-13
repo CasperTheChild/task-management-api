@@ -5,13 +5,11 @@ namespace Application.Services;
 public class AuthenticationService
 {
     private readonly IAuthService service;
-    private readonly IBackgroundJobService backgroundJobService;
     private readonly INotificationService notificationService;
 
-    public AuthenticationService(IAuthService service, IBackgroundJobService backgroundJobService, INotificationService notificationService)
+    public AuthenticationService(IAuthService service, INotificationService notificationService)
     {
         this.service = service;
-        this.backgroundJobService = backgroundJobService;
         this.notificationService = notificationService;
     }
 
