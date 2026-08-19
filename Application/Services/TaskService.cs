@@ -14,13 +14,15 @@ public class TaskService
     private readonly AuthorizationService authorizationService;
     private readonly ICurrentUserService currentUserService;
     private readonly IUnitOfWork unitOfWork;
+    private readonly ITaskAssignmentRepository taskAssignmentRepository;
 
-    public TaskService(ITaskRepository repository, AuthorizationService authorizationService, ICurrentUserService currentUserService, IUnitOfWork unitOfWork)
+    public TaskService(ITaskRepository repository, AuthorizationService authorizationService, ICurrentUserService currentUserService, IUnitOfWork unitOfWork, ITaskAssignmentRepository taskAssignmentRepository)
     {
         this.repository = repository;
         this.authorizationService = authorizationService;
         this.currentUserService = currentUserService;
         this.unitOfWork = unitOfWork;
+        this.taskAssignmentRepository = taskAssignmentRepository;
     }
 
     public async Task<TaskModel> GetAsync(int todoListId, int id)
@@ -47,6 +49,20 @@ public class TaskService
         }
 
         return TaskMapper.ToModel(entity);
+    }
+
+    public async Task<PaginatedModel<TaskModel>> GetAllByUserIdAsync(int pageNum, int pageSize)
+    {
+        var userId = this.currentUserService.UserId;
+
+        if (userId == null)
+        {
+            throw new UnauthorizedAccessException();
+        }
+
+        var entities = await this.repository.GetAllByUserIdAsync(userId, pageNum, pageSize);
+
+        return PaginationMapper.ToPaginatedModel(entities.Items.Select(t => TaskMapper.ToModel(t)), entities.TotalItems, pageNum, pageSize);
     }
 
     public async Task<PaginatedModel<TaskModel>> GetAllAsync(int todoListId, int pageNum, int pageSize)
@@ -149,7 +165,11 @@ public class TaskService
 
         var entity = TaskMapper.ToEntityFromCreate(todoListId, model);
 
-        this.repository.CreateAsync(todoListId, entity);
+        this.repository.Create(todoListId, entity);
+
+        await this.unitOfWork.SaveChangesAsync();
+
+        this.taskAssignmentRepository.AssignTaskToUserAsync(userId, entity.Id);
 
         await this.unitOfWork.SaveChangesAsync();
 

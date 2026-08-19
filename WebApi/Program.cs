@@ -16,6 +16,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
+using Hangfire;
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
@@ -49,7 +50,12 @@ builder.Services.AddScoped<TodoListService>();
 builder.Services.AddScoped<TodoListUserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICurrentUserService, MyCurrentUserService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IEmailService, SendGridEmailService>();
+builder.Services.AddScoped<IDeadlineService, DeadlineService>();
 
+builder.Services.AddHangfire(p => p.UseSqlServerStorage(builder.Configuration.GetConnectionString("HangfireDb")));
+builder.Services.AddHangfireServer();
 
 builder.Services.AddHttpContextAccessor();
 
@@ -136,11 +142,15 @@ app.MapGet("/", context =>
     return Task.CompletedTask;
 });
 
+app.UseHangfireDashboard("/hangfire");
+
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
     options.SwaggerEndpoint("/swagger/v1/swagger.json", "WebApp");
 });
+
+HangfireJobRegistration.RegisterJobs();
 
 
 //using (var scope = app.Services.CreateScope())

@@ -17,7 +17,7 @@ public class TaskRepository : ITaskRepository
         this.context = context;
     }
 
-    public void CreateAsync(int todoListId, TaskEntity entity)
+    public void Create(int todoListId, TaskEntity entity)
     {
         this.context.Tasks.Add(entity);
     }
@@ -30,6 +30,23 @@ public class TaskRepository : ITaskRepository
         {
             this.context.Remove(entity);
         }
+    }
+
+    public async Task<IList<TaskEntity>> GetTasksDueBetween(DateTime from, DateTime to)
+    {
+        var query = this.context.Tasks
+            .Include(t => t.AssignedUsers)
+            .Where(t => t.EndDate >= from && t.EndDate <= to);
+        var entities = await query.ToListAsync();
+        return entities;
+    }
+
+    public async Task<PaginatedModel<TaskEntity>> GetAllByUserIdAsync(string userId, int pageNum, int pageSize)
+    {
+        var query = this.context.Tasks.Where(t => t.TodoList.Members.Any(m => m.UserId == userId));
+        var totalItems = await query.CountAsync();
+        var entities = await query.Skip((pageNum - 1) * pageSize).Take(pageSize).ToListAsync();
+        return PaginationMapper.ToPaginatedEntity(entities, totalItems, pageNum, pageSize);
     }
 
     public async Task<PaginatedModel<TaskEntity>> GetAllAsync(int todoListId, int pageNum, int pageSize)

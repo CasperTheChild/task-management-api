@@ -54,20 +54,11 @@ public class TaskAssignmentRepository : ITaskAssignmentRepository
         return PaginationMapper.ToPaginatedModel(models, totalItems, options.PageNum, options.PageSize);
     }
 
-    public async Task AssignTaskToUserAsync(string userId, int taskId)
+    public void AssignTaskToUserAsync(string userId, int taskId)
     {
-        var entity = await this.context.TaskAssignments.Where(t => t.TaskId == taskId && t.UserId == userId).FirstOrDefaultAsync();
-
-        if (entity != null)
-        {
-            throw new InvalidOperationException("Task is already assigned to the user.");
-        }
-
         var taskAssignmentEntity = TaskAssignmentMapper.ToTaskAssignmentEntity(taskId, userId);
 
         this.context.TaskAssignments.Add(taskAssignmentEntity);
-
-        await this.context.SaveChangesAsync();
     }
 
     public async Task RemoveTaskAssignmentAsync(string userId, int taskId)
@@ -85,7 +76,5 @@ public class TaskAssignmentRepository : ITaskAssignmentRepository
         }
 
         this.context.TaskAssignments.Remove(entity);
-
-        await this.context.SaveChangesAsync();
     }
 }

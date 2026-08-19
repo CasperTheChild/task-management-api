@@ -1,23 +1,34 @@
 ﻿using Application.Services.Interfaces;
+using Hangfire;
 
 namespace Application.Services;
 
 public class AuthenticationService
 {
     private readonly IAuthService service;
+    private readonly INotificationService notificationService;
 
-    public AuthenticationService(IAuthService service)
+    public AuthenticationService(IAuthService service, INotificationService notificationService)
     {
         this.service = service;
+        this.notificationService = notificationService;
     }
 
-    public async Task<string?> Login(string username, string password)
+    public async Task<string?> LoginAsync(string username, string password)
     {
-        return await this.service.LoginAsync(username, password);
+        var rhuh = await this.service.LoginAsync(username, password);
+
+        BackgroundJob.Enqueue(() => this.notificationService.SendLoginNotificationAsync(username));
+
+        return rhuh;
     }
 
-    public async Task<bool> Register(string email, string password)
+    public async Task<bool> RegisterAsync(string email, string password)
     {
-        return await this.service.RegisterAsync(email, password);
+        var rhuh = await this.service.RegisterAsync(email, password);
+
+        BackgroundJob.Enqueue(() => this.notificationService.SendNotificationAsync(email, "Welcome!", "Thank you for registering.", false));
+
+        return rhuh;
     }
 }

@@ -56,11 +56,6 @@ public class TodoListService
     {
         var userId = this.currentUserService.UserId ?? throw new UnauthorizedAccessException();
 
-        if (userId == null)
-        {
-            throw new UnauthorizedAccessException();
-        }
-
         var permission = await this.authorizationService.CanViewAsync(userId, id);
 
         if (!permission)
@@ -145,12 +140,7 @@ public class TodoListService
 
     public async Task UpdateAsync(int id, TodoListCreateModel model)
     {
-        var userId = this.currentUserService.UserId;
-        if (userId == null)
-        {
-            throw new UnauthorizedAccessException();
-        }
-
+        var userId = this.currentUserService.UserId ?? throw new UnauthorizedAccessException();
         var permission = await this.authorizationService.CanEditAsync(userId, id);
 
         if (!permission)
@@ -172,13 +162,7 @@ public class TodoListService
 
     public async Task DeleteAsync(int id)
     {
-        var userId = this.currentUserService.UserId;
-
-        if (userId == null)
-        {
-            throw new UnauthorizedAccessException();
-        }
-
+        var userId = this.currentUserService.UserId ?? throw new UnauthorizedAccessException();
         var permission = await this.authorizationService.CanEditAsync(userId, id);
 
         if (!permission)
