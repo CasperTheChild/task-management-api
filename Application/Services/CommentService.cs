@@ -5,8 +5,10 @@ using Application.Repository.Interfaces;
 using Application.Services.Interfaces;
 using Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Hosting;
 using System.ComponentModel.Design;
 using System.Threading.Tasks;
+using Hangfire;
 
 namespace Application.Services;
 
@@ -16,14 +18,22 @@ public class CommentService
     private readonly ITaskRepository taskRepository;
     private readonly ICurrentUserService currentUserService;
     private readonly AuthorizationService authorizationService;
+    private readonly INotificationService notificationService;
     private readonly IUnitOfWork unitOfWork;
 
-    public CommentService(ICommentRepository repository, ICurrentUserService currentuserService, AuthorizationService authorizationRepository, ITaskRepository taskRepository, IUnitOfWork unitOfWork)
+    public CommentService(
+        ICommentRepository repository,
+        ICurrentUserService currentuserService,
+        AuthorizationService authorizationRepository,
+        ITaskRepository taskRepository,
+        IUnitOfWork unitOfWork,
+        INotificationService notificationService)
     {
         this.repository = repository;
         this.currentUserService = currentuserService;
         this.authorizationService = authorizationRepository;
         this.taskRepository = taskRepository;
+        this.notificationService = notificationService;
         this.unitOfWork = unitOfWork;
     }
 
@@ -139,7 +149,19 @@ public class CommentService
 
         await this.unitOfWork.SaveChangesAsync();
 
+        var taskEntity = this.taskRepository.GetAsync(taskId);
 
+        foreach (var user in taskEntity.Result!.AssignedUsers)
+        {
+            if (user.UserId == userId) { continue; }
+
+            BackgroundJob.Enqueue(() => this.notificationService.SendNotificationAsync(
+                user.UserId,
+                "Task Deadline Approaching",
+                $"Your task has been commented by someone",
+                false
+            ));
+        }
 
         return CommentMapper.ToModel(entity);
     }
