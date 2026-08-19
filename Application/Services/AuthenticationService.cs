@@ -1,4 +1,5 @@
 ﻿using Application.Services.Interfaces;
+using Hangfire;
 
 namespace Application.Services;
 
@@ -16,14 +17,18 @@ public class AuthenticationService
     public async Task<string?> LoginAsync(string username, string password)
     {
         var rhuh = await this.service.LoginAsync(username, password);
-        //this.backgroundJobService.Enqueue<INotificationService>(x => x.SendWelcomeNotificationAsync(username));
+
+        BackgroundJob.Enqueue(() => this.notificationService.SendLoginNotificationAsync(username));
+
         return rhuh;
     }
 
     public async Task<bool> RegisterAsync(string email, string password)
     {
         var rhuh = await this.service.RegisterAsync(email, password);
-        //this.backgroundJobService.Enqueue<INotificationService>(x => x.SendWelcomeNotificationAsync(email));
+
+        BackgroundJob.Enqueue(() => this.notificationService.SendNotificationAsync(email, "Welcome!", "Thank you for registering.", false));
+
         return rhuh;
     }
 }

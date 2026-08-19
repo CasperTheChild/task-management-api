@@ -15,4 +15,11 @@ public class NotificationService : INotificationService
     {
         await this.emailService.SendEmailAsync(to, subject, body, isHttp);
     }
+
+    public async Task SendLoginNotificationAsync(string username)
+    {
+        var subject = "Login Notification";
+        var body = $"User {username} has logged in.";
+        await this.emailService.SendEmailAsync(username, subject, body, false);
+    }
 }
